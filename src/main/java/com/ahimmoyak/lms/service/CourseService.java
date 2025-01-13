@@ -28,7 +28,6 @@ public class CourseService {
         String courseId = requestDto.getCourseId();
 
         if (requestDto.getCourseId() == null) {
-            System.out.println(courseId);
             courseId = "course_" + UUID.randomUUID();
         }
 

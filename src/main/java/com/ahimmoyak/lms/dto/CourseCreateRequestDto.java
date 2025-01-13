@@ -1,6 +1,7 @@
 package com.ahimmoyak.lms.dto;
 
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,7 +17,10 @@ import java.util.List;
 public class CourseCreateRequestDto {
 
     private String courseId;
+
+    @NotBlank(message = "Course title must not be empty or null")
     private String courseTitle;
+
     private String courseIntroduce;
     private String status;
     private LocalDate activeStartDate;
