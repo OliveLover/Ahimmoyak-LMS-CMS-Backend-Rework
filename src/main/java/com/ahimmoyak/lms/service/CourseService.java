@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 
+import java.time.LocalDate;
+import java.util.UUID;
+
 import static com.ahimmoyak.lms.entity.Course.COURSE_TABLE_SCHEMA;
 
 @Service
@@ -22,7 +25,30 @@ public class CourseService {
     }
 
     public ResponseEntity<MessageResponseDto> createCourse(CourseCreateRequestDto requestDto) {
-        Course course = requestDto.toEntity();
+        String courseId = requestDto.getCourseId();
+
+        if (requestDto.getCourseId() == null) {
+            System.out.println(courseId);
+            courseId = "course_" + UUID.randomUUID();
+        }
+
+        Course course = Course.builder()
+                .courseId(courseId)
+                .title(requestDto.getCourseTitle())
+                .introduce(requestDto.getCourseIntroduce())
+                .status(requestDto.getStatus())
+                .activeStartDate(requestDto.getActiveStartDate())
+                .activeEndDate(requestDto.getActiveEndDate())
+                .instructor(requestDto.getInstructor())
+                .thumbnailPath(requestDto.getThumbnailPath())
+                .grade(requestDto.getGrade())
+                .category(requestDto.getCategory())
+                .setDuration(requestDto.getSetDuration())
+                .fundingType(requestDto.getFundingType())
+                .cardType(requestDto.getCardType())
+                .createdDate(LocalDate.now())
+                .modifiedDate(LocalDate.now())
+                .build();
         courseTable.putItem(course);
 
         MessageResponseDto responseDto = new MessageResponseDto(

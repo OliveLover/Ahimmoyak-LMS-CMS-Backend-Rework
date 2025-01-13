@@ -1,8 +1,6 @@
 package com.ahimmoyak.lms.dto;
 
-import com.ahimmoyak.lms.entity.Course;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,25 +40,5 @@ public class CourseCreateRequestDto {
     private List<String> cardType;
     private LocalDate createdDate;
     private LocalDate modifiedDate;
-
-    public Course toEntity() {
-        return Course.builder()
-                .courseId(this.courseId)
-                .title(this.courseTitle)
-                .introduce(this.courseIntroduce)
-                .status(this.status)
-                .activeStartDate(this.activeStartDate)
-                .activeEndDate(this.activeEndDate)
-                .instructor(this.instructor)
-                .thumbnailPath(this.thumbnailPath)
-                .grade(this.grade)
-                .category(this.category)
-                .setDuration(this.setDuration)
-                .fundingType(this.fundingType)
-                .cardType(this.cardType)
-                .createdDate(this.createdDate != null ? this.createdDate : LocalDate.now())
-                .modifiedDate(this.modifiedDate != null ? this.modifiedDate : LocalDate.now())
-                .build();
-    }
 
 }

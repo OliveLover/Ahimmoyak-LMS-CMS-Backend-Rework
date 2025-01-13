@@ -13,9 +13,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,7 +36,7 @@ class CourseServiceTest {
 
     private final DynamoDbTable<Course> courseTable;
 
-    private final String testPk = "course_123";
+    private String courseId;
 
     @Autowired
     public CourseServiceTest(DynamoDbEnhancedClient enhancedClient) {
@@ -43,15 +45,20 @@ class CourseServiceTest {
 
     @AfterEach
     void deleteCourseData() {
-        courseTable.deleteItem(builder -> builder.key(k -> k.partitionValue(testPk)));
+        Key key = Key.builder().partitionValue(courseId).build();
+        courseTable.deleteItem(key);
+
+        courseId = null;
     }
 
     @Test
-    @DisplayName("훈련과정 생성하면 200 OK로 응답한다.")
+    @DisplayName("훈련과정 생성하면 DynamoDb로 저장하고 200 OK로 응답한다.")
     void createCourse_shouldReturnSuccessMessage() throws Exception {
         // given
+        courseId = "coures_" + UUID.randomUUID();
+
         CourseCreateRequestDto requestDto = CourseCreateRequestDto.builder()
-                .courseId(testPk)
+                .courseId(courseId)
                 .courseTitle("Course Title")
                 .courseIntroduce("Course Introduction")
                 .status("ACTIVE")
@@ -75,7 +82,9 @@ class CourseServiceTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message", is("Course created successfully.")));
+                .andExpect(jsonPath("$.message", is("Course created successfully.")))
+                .andReturn();
+
     }
 
     @Test
@@ -83,7 +92,6 @@ class CourseServiceTest {
     void createCourse_shouldReturnBadRequest_whenDurationIsNegative() throws Exception {
         // given
         CourseCreateRequestDto requestDto = CourseCreateRequestDto.builder()
-                .courseId("course_123")
                 .courseTitle("Course Title")
                 .courseIntroduce("Course Introduction")
                 .status("ACTIVE")
