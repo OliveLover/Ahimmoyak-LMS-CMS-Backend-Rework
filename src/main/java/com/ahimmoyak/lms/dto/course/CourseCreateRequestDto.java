@@ -1,4 +1,4 @@
-package com.ahimmoyak.lms.dto;
+package com.ahimmoyak.lms.dto.course;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

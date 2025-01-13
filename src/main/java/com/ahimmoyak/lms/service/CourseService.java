@@ -1,8 +1,10 @@
 package com.ahimmoyak.lms.service;
 
-import com.ahimmoyak.lms.dto.CourseCreateRequestDto;
 import com.ahimmoyak.lms.dto.MessageResponseDto;
+import com.ahimmoyak.lms.dto.course.CourseCreateRequestDto;
+import com.ahimmoyak.lms.dto.course.SessionCreateRequestDto;
 import com.ahimmoyak.lms.entity.Course;
+import com.ahimmoyak.lms.entity.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -12,16 +14,19 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static com.ahimmoyak.lms.entity.Course.COURSE_TABLE_SCHEMA;
+import static com.ahimmoyak.lms.entity.Course.COURSES_TABLE_SCHEMA;
+import static com.ahimmoyak.lms.entity.Session.SESSIONS_TABLE_SCHEMA;
 
 @Service
 public class CourseService {
 
-    private final DynamoDbTable<Course> courseTable;
+    private final DynamoDbTable<Course> coursesTable;
+    private final DynamoDbTable<Session> sessionsTable;
 
     @Autowired
     public CourseService(DynamoDbEnhancedClient enhancedClient) {
-        this.courseTable = enhancedClient.table("courses", COURSE_TABLE_SCHEMA);
+        this.coursesTable = enhancedClient.table("courses", COURSES_TABLE_SCHEMA);
+        this.sessionsTable = enhancedClient.table("sessions", SESSIONS_TABLE_SCHEMA);
     }
 
     public ResponseEntity<MessageResponseDto> createCourse(CourseCreateRequestDto requestDto) {
@@ -33,7 +38,7 @@ public class CourseService {
 
         Course course = Course.builder()
                 .courseId(courseId)
-                .title(requestDto.getCourseTitle())
+                .courseTitle(requestDto.getCourseTitle())
                 .introduce(requestDto.getCourseIntroduce())
                 .status(requestDto.getStatus())
                 .activeStartDate(requestDto.getActiveStartDate())
@@ -48,7 +53,7 @@ public class CourseService {
                 .createdDate(LocalDate.now())
                 .modifiedDate(LocalDate.now())
                 .build();
-        courseTable.putItem(course);
+        coursesTable.putItem(course);
 
         MessageResponseDto responseDto = new MessageResponseDto(
                 "Course created successfully."
@@ -57,4 +62,26 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
+    public ResponseEntity<MessageResponseDto> createSession(SessionCreateRequestDto requestDto) {
+        String sessionId = requestDto.getSessionId();
+
+        if (requestDto.getSessionId() == null) {
+            sessionId = "session_" + UUID.randomUUID();
+        }
+
+        Session session = Session.builder()
+                .courseId(requestDto.getCourseId())
+                .sessionId(sessionId)
+                .sessionTitle(requestDto.getSessionTitle())
+                .sessionIndex(requestDto.getSessionIndex())
+                .build();
+
+        sessionsTable.putItem(session);
+
+        MessageResponseDto responseDto = new MessageResponseDto(
+                "Session created successfully."
+        );
+
+        return ResponseEntity.ok(responseDto);
+    }
 }

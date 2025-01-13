@@ -1,7 +1,9 @@
 package com.ahimmoyak.lms.service;
 
-import com.ahimmoyak.lms.dto.CourseCreateRequestDto;
+import com.ahimmoyak.lms.dto.course.CourseCreateRequestDto;
+import com.ahimmoyak.lms.dto.course.SessionCreateRequestDto;
 import com.ahimmoyak.lms.entity.Course;
+import com.ahimmoyak.lms.entity.Session;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +22,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,21 +38,39 @@ class CourseServiceTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private final DynamoDbTable<Course> courseTable;
+    private final DynamoDbTable<Course> coursesTable;
+
+    private final DynamoDbTable<Session> sessionsTable;
 
     private String courseId;
 
+    private String sessionId;
+
     @Autowired
     public CourseServiceTest(DynamoDbEnhancedClient enhancedClient) {
-        this.courseTable = enhancedClient.table("courses", Course.COURSE_TABLE_SCHEMA);
+        this.coursesTable = enhancedClient.table("courses", Course.COURSES_TABLE_SCHEMA);
+        this.sessionsTable = enhancedClient.table("sessions", Session.SESSIONS_TABLE_SCHEMA);
     }
 
     @AfterEach
     void deleteCourseData() {
-        Key key = Key.builder().partitionValue(courseId).build();
-        courseTable.deleteItem(key);
+        if (courseId != null) {
+            Key key = Key.builder()
+                    .partitionValue(courseId)
+                    .build();
+            coursesTable.deleteItem(key);
+        }
+    }
 
-        courseId = null;
+    @AfterEach
+    void deleteSessionData() {
+        if (courseId != null && sessionId != null) {
+            Key key = Key.builder()
+                    .partitionValue(courseId)
+                    .sortValue(sessionId)
+                    .build();
+            sessionsTable.deleteItem(key);
+        }
     }
 
     @Test
@@ -82,8 +104,7 @@ class CourseServiceTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message", is("Course created successfully.")))
-                .andReturn();
+                .andExpect(jsonPath("$.message", is("Course created successfully.")));
 
     }
 
@@ -116,6 +137,42 @@ class CourseServiceTest {
                         .content(jsonRequest))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message[0]", is("The field 'setDuration' must be at least 0.")));
+    }
+
+    @Test
+    @DisplayName("Session 생성하면 DynamoDb로 저장하고 200 OK로 응답한다.")
+    void createSession_shouldReturnSuccessMessage() throws Exception {
+        // given
+        courseId = "course_1234";
+        sessionId = "session_" + UUID.randomUUID();
+        String sessionTitle = "Introduction to Java";
+        int sessionIndex = 1;
+
+        SessionCreateRequestDto requestDto = SessionCreateRequestDto.builder()
+                .courseId(courseId)
+                .sessionId(sessionId)
+                .sessionTitle(sessionTitle)
+                .sessionIndex(sessionIndex)
+                .build();
+
+        String jsonRequest = objectMapper.writeValueAsString(requestDto);
+
+        // when & then
+        mockMvc.perform(post("/api/v1/admin/courses/sessions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message", is("Session created successfully.")))
+                .andReturn();
+
+        Session storedSession = sessionsTable.getItem(Key.builder()
+                .partitionValue(courseId)
+                .sortValue(sessionId)
+                .build());
+
+        assertNotNull(storedSession);
+        assertEquals(sessionTitle, storedSession.getSessionTitle());
+        assertEquals(sessionIndex, storedSession.getSessionIndex());
     }
 
 }
