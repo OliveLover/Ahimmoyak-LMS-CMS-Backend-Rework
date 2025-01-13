@@ -1,7 +1,6 @@
 package com.ahimmoyak.lms.dto;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,16 +17,10 @@ public class CourseCreateRequestDto {
 
     private String courseId;
     private String courseTitle;
-
     private String courseIntroduce;
     private String status;
-
-    @NotNull(message = "The field 'activeStartDate' is missing.")
     private LocalDate activeStartDate;
-
-    @NotNull(message = "The field 'activeStartDate' is missing.")
     private LocalDate activeEndDate;
-
     private String instructor;
     private String thumbnailPath;
     private String grade;
