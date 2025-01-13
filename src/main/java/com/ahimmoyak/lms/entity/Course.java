@@ -19,11 +19,10 @@ import java.util.List;
 @DynamoDbBean
 public class Course {
 
-    public static final TableSchema<Course> COURSE_TABLE_SCHEMA = TableSchema.fromClass(Course.class);
+    public static final TableSchema<Course> COURSES_TABLE_SCHEMA = TableSchema.fromClass(Course.class);
 
     private String courseId;
-    private String sessionId;
-    private String title;
+    private String courseTitle;
     private String introduce;
     private String status;
     private LocalDate activeStartDate;
@@ -44,14 +43,9 @@ public class Course {
         return courseId;
     }
 
-    @DynamoDbAttribute("session_id")
-    public String getSessionId() {
-        return sessionId;
-    }
-
     @DynamoDbAttribute("course_title")
-    public String getTitle() {
-        return title;
+    public String getCourseTitle() {
+        return courseTitle;
     }
 
     @DynamoDbAttribute("course_introduce")
