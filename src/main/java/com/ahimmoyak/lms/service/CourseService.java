@@ -1,8 +1,9 @@
 package com.ahimmoyak.lms.service;
 
-import com.ahimmoyak.lms.dto.MessageResponseDto;
 import com.ahimmoyak.lms.dto.course.CourseCreateRequestDto;
+import com.ahimmoyak.lms.dto.course.CourseCreateResponseDto;
 import com.ahimmoyak.lms.dto.course.SessionCreateRequestDto;
+import com.ahimmoyak.lms.dto.course.SessionCreateResponseDto;
 import com.ahimmoyak.lms.entity.Course;
 import com.ahimmoyak.lms.entity.Session;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ public class CourseService {
         this.sessionsTable = enhancedClient.table("sessions", SESSIONS_TABLE_SCHEMA);
     }
 
-    public ResponseEntity<MessageResponseDto> createCourse(CourseCreateRequestDto requestDto) {
+    public ResponseEntity<CourseCreateResponseDto> createCourse(CourseCreateRequestDto requestDto) {
         String courseId = requestDto.getCourseId();
 
         if (requestDto.getCourseId() == null) {
@@ -39,7 +40,7 @@ public class CourseService {
         Course course = Course.builder()
                 .courseId(courseId)
                 .courseTitle(requestDto.getCourseTitle())
-                .introduce(requestDto.getCourseIntroduce())
+                .courseIntroduce(requestDto.getCourseIntroduce())
                 .status(requestDto.getStatus())
                 .activeStartDate(requestDto.getActiveStartDate())
                 .activeEndDate(requestDto.getActiveEndDate())
@@ -55,14 +56,14 @@ public class CourseService {
                 .build();
         coursesTable.putItem(course);
 
-        MessageResponseDto responseDto = new MessageResponseDto(
-                "Course created successfully."
-        );
+        CourseCreateResponseDto responseDto = CourseCreateResponseDto.builder()
+                .courseId(courseId)
+                .build();
 
         return ResponseEntity.ok(responseDto);
     }
 
-    public ResponseEntity<MessageResponseDto> createSession(SessionCreateRequestDto requestDto) {
+    public ResponseEntity<SessionCreateResponseDto> createSession(SessionCreateRequestDto requestDto) {
         String sessionId = requestDto.getSessionId();
 
         if (requestDto.getSessionId() == null) {
@@ -78,10 +79,11 @@ public class CourseService {
 
         sessionsTable.putItem(session);
 
-        MessageResponseDto responseDto = new MessageResponseDto(
-                "Session created successfully."
-        );
+        SessionCreateResponseDto responseDto = SessionCreateResponseDto.builder()
+                .sessionId(sessionId)
+                .build();
 
         return ResponseEntity.ok(responseDto);
+
     }
 }

@@ -23,7 +23,7 @@ public class Course {
 
     private String courseId;
     private String courseTitle;
-    private String introduce;
+    private String courseIntroduce;
     private String status;
     private LocalDate activeStartDate;
     private LocalDate activeEndDate;
@@ -49,8 +49,8 @@ public class Course {
     }
 
     @DynamoDbAttribute("course_introduce")
-    public String getIntroduce() {
-        return introduce;
+    public String getCourseIntroduce() {
+        return courseIntroduce;
     }
 
     @DynamoDbAttribute("status")

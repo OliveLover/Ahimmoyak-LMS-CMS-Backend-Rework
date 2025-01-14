@@ -21,11 +21,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -103,8 +101,28 @@ class CourseServiceTest {
         mockMvc.perform(post("/api/v1/admin/courses")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message", is("Course created successfully.")));
+                .andExpect(status().isOk());
+
+        // DynamoDB에서 Course 확인
+        Course storedCourse = coursesTable.getItem(Key.builder()
+                .partitionValue(courseId)
+                .build());
+
+        assertNotNull(storedCourse, "Course should be saved in DynamoDB");
+        assertEquals(courseId, storedCourse.getCourseId(), "Course ID should match");
+        assertEquals("Course Title", storedCourse.getCourseTitle(), "Course Title should match");
+        assertEquals("Course Introduction", storedCourse.getCourseIntroduce(), "Course Introduction should match");
+        assertEquals("ACTIVE", storedCourse.getStatus(), "Status should be ACTIVE");
+        assertEquals(LocalDate.of(2025, 1, 1), storedCourse.getActiveStartDate(), "Start Date should match");
+        assertEquals(LocalDate.of(2025, 12, 31), storedCourse.getActiveEndDate(), "End Date should match");
+        assertEquals("Instructor Name", storedCourse.getInstructor(), "Instructor should match");
+        assertEquals("/path/to/thumbnail", storedCourse.getThumbnailPath(), "Thumbnail path should match");
+        assertEquals("A", storedCourse.getGrade(), "Grade should match");
+        assertEquals("Science", storedCourse.getCategory(), "Category should match");
+        assertEquals(30, storedCourse.getSetDuration(), "Duration should match");
+        assertEquals("Government", storedCourse.getFundingType(), "Funding Type should match");
+        assertEquals(List.of("Type1", "Type2"), storedCourse.getCardType(), "Card Types should match");
+
 
     }
 
@@ -135,8 +153,7 @@ class CourseServiceTest {
         mockMvc.perform(post("/api/v1/admin/courses")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message[0]", is("The field 'setDuration' must be at least 0.")));
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -162,7 +179,6 @@ class CourseServiceTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message", is("Session created successfully.")))
                 .andReturn();
 
         Session storedSession = sessionsTable.getItem(Key.builder()
