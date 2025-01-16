@@ -1,11 +1,10 @@
 package com.ahimmoyak.lms.service;
 
-import com.ahimmoyak.lms.dto.course.CourseCreateRequestDto;
-import com.ahimmoyak.lms.dto.course.CourseCreateResponseDto;
-import com.ahimmoyak.lms.dto.course.SessionCreateRequestDto;
-import com.ahimmoyak.lms.dto.course.SessionCreateResponseDto;
+import com.ahimmoyak.lms.dto.course.*;
+import com.ahimmoyak.lms.entity.Content;
 import com.ahimmoyak.lms.entity.Course;
 import com.ahimmoyak.lms.entity.Session;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -15,6 +14,7 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import static com.ahimmoyak.lms.entity.Content.CONTENTS_TABLE_SCHEMA;
 import static com.ahimmoyak.lms.entity.Course.COURSES_TABLE_SCHEMA;
 import static com.ahimmoyak.lms.entity.Session.SESSIONS_TABLE_SCHEMA;
 
@@ -23,11 +23,13 @@ public class CourseService {
 
     private final DynamoDbTable<Course> coursesTable;
     private final DynamoDbTable<Session> sessionsTable;
+    private final DynamoDbTable<Content> contentsTable;
 
     @Autowired
     public CourseService(DynamoDbEnhancedClient enhancedClient) {
         this.coursesTable = enhancedClient.table("courses", COURSES_TABLE_SCHEMA);
         this.sessionsTable = enhancedClient.table("sessions", SESSIONS_TABLE_SCHEMA);
+        this.contentsTable = enhancedClient.table("contents", CONTENTS_TABLE_SCHEMA);
     }
 
     public ResponseEntity<CourseCreateResponseDto> createCourse(CourseCreateRequestDto requestDto) {
@@ -86,4 +88,30 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
 
     }
+
+    public ResponseEntity<ContentCreateResponseDto> createContent(@Valid ContentCreateRequestDto requestDto) {
+        String contentId = requestDto.getContentId();
+
+        if (requestDto.getContentId() == null) {
+            contentId = "content_" + UUID.randomUUID();
+        }
+
+        Content content = Content.builder()
+                .courseId(requestDto.getCourseId())
+                .sessionId(requestDto.getSessionId())
+                .contentId(contentId)
+                .contentTitle(requestDto.getContentTitle())
+                .contentType(requestDto.getContentType())
+                .contentIndex(requestDto.getContentIndex())
+                .build();
+
+        contentsTable.putItem(content);
+
+        ContentCreateResponseDto responseDto = ContentCreateResponseDto.builder()
+                .contentId(contentId)
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
 }

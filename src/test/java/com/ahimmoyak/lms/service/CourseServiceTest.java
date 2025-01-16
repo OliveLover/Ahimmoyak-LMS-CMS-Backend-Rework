@@ -1,7 +1,9 @@
 package com.ahimmoyak.lms.service;
 
+import com.ahimmoyak.lms.dto.course.ContentCreateRequestDto;
 import com.ahimmoyak.lms.dto.course.CourseCreateRequestDto;
 import com.ahimmoyak.lms.dto.course.SessionCreateRequestDto;
+import com.ahimmoyak.lms.entity.Content;
 import com.ahimmoyak.lms.entity.Course;
 import com.ahimmoyak.lms.entity.Session;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,6 +23,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import static com.ahimmoyak.lms.dto.course.ContentType.VIDEO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -40,14 +43,17 @@ class CourseServiceTest {
 
     private final DynamoDbTable<Session> sessionsTable;
 
-    private String courseId;
+    private final DynamoDbTable<Content> contentsTable;
 
+    private String courseId;
     private String sessionId;
+    private String contentId;
 
     @Autowired
     public CourseServiceTest(DynamoDbEnhancedClient enhancedClient) {
         this.coursesTable = enhancedClient.table("courses", Course.COURSES_TABLE_SCHEMA);
         this.sessionsTable = enhancedClient.table("sessions", Session.SESSIONS_TABLE_SCHEMA);
+        this.contentsTable = enhancedClient.table("contents", Content.CONTENTS_TABLE_SCHEMA);
     }
 
     @AfterEach
@@ -68,6 +74,17 @@ class CourseServiceTest {
                     .sortValue(sessionId)
                     .build();
             sessionsTable.deleteItem(key);
+        }
+    }
+
+    @AfterEach
+    void deleteContentData() {
+        if (courseId != null && contentId != null) {
+            Key key = Key.builder()
+                    .partitionValue(courseId)
+                    .sortValue(contentId)
+                    .build();
+            contentsTable.deleteItem(key);
         }
     }
 
@@ -103,7 +120,6 @@ class CourseServiceTest {
                         .content(jsonRequest))
                 .andExpect(status().isOk());
 
-        // DynamoDB에서 Course 확인
         Course storedCourse = coursesTable.getItem(Key.builder()
                 .partitionValue(courseId)
                 .build());
@@ -189,6 +205,66 @@ class CourseServiceTest {
         assertNotNull(storedSession);
         assertEquals(sessionTitle, storedSession.getSessionTitle());
         assertEquals(sessionIndex, storedSession.getSessionIndex());
+    }
+
+    @Test
+    @DisplayName("Content 생성하면 DynamoDb로 저장하고 200 OK로 응답한다.")
+    void createContent_shouldReturnSuccessMessage() throws Exception {
+        // given
+        courseId = "course_1234";
+        sessionId = "session_5678";
+        contentId = "content_" + UUID.randomUUID();
+
+        ContentCreateRequestDto requestDto = ContentCreateRequestDto.builder()
+                .courseId(courseId)
+                .sessionId(sessionId)
+                .contentId(contentId)
+                .contentTitle("Introduction to Java")
+                .contentType(VIDEO)
+                .contentIndex(1)
+                .build();
+
+        String jsonRequest = objectMapper.writeValueAsString(requestDto);
+
+        // when & then
+        mockMvc.perform(post("/api/v1/admin/courses/sessions/contents")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isOk());
+
+        Content storedContent = contentsTable.getItem(Key.builder()
+                .partitionValue(courseId)
+                .sortValue(contentId)
+                .build());
+
+        assertNotNull(storedContent, "Content should be saved in DynamoDB");
+        assertEquals(courseId, storedContent.getCourseId(), "Course ID should match");
+        assertEquals(sessionId, storedContent.getSessionId(), "Session ID should match");
+        assertEquals(contentId, storedContent.getContentId(), "Content ID should match");
+        assertEquals("Introduction to Java", storedContent.getContentTitle(), "Content Title should match");
+        assertEquals("VIDEO", storedContent.getContentType().name(), "Content Type should match");
+        assertEquals(1, storedContent.getContentIndex(), "Content Index should match");
+    }
+
+    @Test
+    @DisplayName("Content Title이 비어있을 경우 400 Bad Request로 응답한다.")
+    void createContent_shouldReturnBadRequest_whenContentTitleIsBlank() throws Exception {
+        // given
+        ContentCreateRequestDto requestDto = ContentCreateRequestDto.builder()
+                .courseId("course_1234")
+                .sessionId("session_5678")
+                .contentTitle("") // 빈 제목
+                .contentType(VIDEO)
+                .contentIndex(1)
+                .build();
+
+        String jsonRequest = objectMapper.writeValueAsString(requestDto);
+
+        // when & then
+        mockMvc.perform(post("/api/v1/admin/courses/sessions/contents")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isBadRequest());
     }
 
 }
