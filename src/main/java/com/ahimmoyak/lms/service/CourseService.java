@@ -79,7 +79,7 @@ public class CourseService {
         List<SessionDto> sessionDtos = result.stream()
                 .flatMap(page -> page.items().stream())
                 .map(session -> {
-                    List<ContentDto> contentDtos = getContentByCourseId(courseId);
+                    List<ContentDto> contentDtos = getContentByCourseIdAndSessionId(courseId, session.getSessionId());
                     return mapToSessionDto(session, contentDtos);
                 })
                 .toList();
@@ -140,7 +140,7 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
-    private List<ContentDto> getContentByCourseId(String courseId) {
+    private List<ContentDto> getContentByCourseIdAndSessionId(String courseId, String sessionId) {
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
                 .build();
@@ -149,6 +149,7 @@ public class CourseService {
 
         return result.stream()
                 .flatMap(page -> page.items().stream())
+                .filter(content -> content.getSessionId().equals(sessionId))
                 .map(this::mapToContentDto)
                 .toList();
     }
