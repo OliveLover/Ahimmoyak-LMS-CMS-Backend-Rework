@@ -5,10 +5,7 @@ import com.ahimmoyak.lms.service.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,6 +17,12 @@ public class CourseController {
     @PostMapping("/api/v1/admin/courses")
     public ResponseEntity<CourseCreateResponseDto> createCourse(@Valid @RequestBody CourseCreateRequestDto requestDto) {
         return courseService.createCourse(requestDto);
+    }
+
+    @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
+    @GetMapping("/api/v1/admin/courses/{courseId}")
+    public ResponseEntity<CourseSessionsResponseDto> getCourseSessions(@PathVariable String courseId) {
+        return courseService.getCourseSessions(courseId);
     }
 
     @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})

@@ -253,7 +253,7 @@ class CourseServiceTest {
         ContentCreateRequestDto requestDto = ContentCreateRequestDto.builder()
                 .courseId("course_1234")
                 .sessionId("session_5678")
-                .contentTitle("") // 빈 제목
+                .contentTitle("")
                 .contentType(VIDEO)
                 .contentIndex(1)
                 .build();

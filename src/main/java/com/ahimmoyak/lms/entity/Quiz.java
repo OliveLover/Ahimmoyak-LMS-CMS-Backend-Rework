@@ -11,6 +11,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 import java.util.HashMap;
+import java.util.List;
 
 @Setter
 @Builder
@@ -25,7 +26,7 @@ public class Quiz {
     private String quizId;
     private int quizIndex;
     private String question;
-    private HashMap<Integer, String> options;
+    private List<String> options;
     private Integer answer;
     private String explanation;
 
@@ -52,7 +53,7 @@ public class Quiz {
     }
 
     @DynamoDbAttribute("options")
-    public HashMap<Integer, String> getOptions() {
+    public List<String> getOptions() {
         return options;
     }
 

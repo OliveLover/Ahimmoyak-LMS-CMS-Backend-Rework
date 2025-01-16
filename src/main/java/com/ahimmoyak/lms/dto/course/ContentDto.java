@@ -1,0 +1,22 @@
+package com.ahimmoyak.lms.dto.course;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class ContentDto {
+
+    private String contentId;
+    private int contentIndex;
+    private String contentTitle;
+    private ContentType contentType;
+    private List<QuizDto> quiz;
+
+}

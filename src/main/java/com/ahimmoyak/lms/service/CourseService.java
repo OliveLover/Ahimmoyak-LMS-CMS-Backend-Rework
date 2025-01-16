@@ -8,10 +8,15 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.model.Page;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import static com.ahimmoyak.lms.entity.Content.CONTENTS_TABLE_SCHEMA;
@@ -65,6 +70,27 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
+    public ResponseEntity<CourseSessionsResponseDto> getCourseSessions(String courseId) {
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .build();
+
+        SdkIterable<Page<Session>> result = sessionsTable.query(queryRequest);
+        List<SessionDto> sessionDtos = result.stream()
+                .flatMap(page -> page.items().stream())
+                .map(session -> {
+                    List<ContentDto> contentDtos = getContentByCourseId(courseId);
+                    return mapToSessionDto(session, contentDtos);
+                })
+                .toList();
+
+        CourseSessionsResponseDto responseDto = CourseSessionsResponseDto.builder()
+                .sessions(sessionDtos)
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
     public ResponseEntity<SessionCreateResponseDto> createSession(SessionCreateRequestDto requestDto) {
         String sessionId = requestDto.getSessionId();
 
@@ -112,6 +138,37 @@ public class CourseService {
                 .build();
 
         return ResponseEntity.ok(responseDto);
+    }
+
+    private List<ContentDto> getContentByCourseId(String courseId) {
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .build();
+
+        SdkIterable<Page<Content>> result = contentsTable.query(queryRequest);
+
+        return result.stream()
+                .flatMap(page -> page.items().stream())
+                .map(this::mapToContentDto)
+                .toList();
+    }
+
+    private SessionDto mapToSessionDto(Session session, List<ContentDto> contentDtos) {
+        return SessionDto.builder()
+                .sessionId(session.getSessionId())
+                .sessionTitle(session.getSessionTitle())
+                .sessionIndex(session.getSessionIndex())
+                .contents(contentDtos)
+                .build();
+    }
+
+    private ContentDto mapToContentDto(Content content) {
+        return ContentDto.builder()
+                .contentId(content.getContentId())
+                .contentIndex(content.getContentIndex())
+                .contentTitle(content.getContentTitle())
+                .contentType(content.getContentType())
+                .build();
     }
 
 }
