@@ -2,9 +2,11 @@ package com.ahimmoyak.lms.service;
 
 import com.ahimmoyak.lms.dto.course.ContentCreateRequestDto;
 import com.ahimmoyak.lms.dto.course.CourseCreateRequestDto;
+import com.ahimmoyak.lms.dto.course.CreateQuizRequestDto;
 import com.ahimmoyak.lms.dto.course.SessionCreateRequestDto;
 import com.ahimmoyak.lms.entity.Content;
 import com.ahimmoyak.lms.entity.Course;
+import com.ahimmoyak.lms.entity.Quiz;
 import com.ahimmoyak.lms.entity.Session;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -40,20 +42,21 @@ class CourseServiceTest {
     private ObjectMapper objectMapper;
 
     private final DynamoDbTable<Course> coursesTable;
-
     private final DynamoDbTable<Session> sessionsTable;
-
     private final DynamoDbTable<Content> contentsTable;
+    private final DynamoDbTable<Quiz> quizzesTable;
 
     private String courseId;
     private String sessionId;
     private String contentId;
+    private String quizId;
 
     @Autowired
     public CourseServiceTest(DynamoDbEnhancedClient enhancedClient) {
         this.coursesTable = enhancedClient.table("courses", Course.COURSES_TABLE_SCHEMA);
         this.sessionsTable = enhancedClient.table("sessions", Session.SESSIONS_TABLE_SCHEMA);
         this.contentsTable = enhancedClient.table("contents", Content.CONTENTS_TABLE_SCHEMA);
+        this.quizzesTable = enhancedClient.table("quiz", Quiz.QUIZZES_TABLE_SCHEMA);
     }
 
     @AfterEach
@@ -85,6 +88,17 @@ class CourseServiceTest {
                     .sortValue(contentId)
                     .build();
             contentsTable.deleteItem(key);
+        }
+    }
+
+    @AfterEach
+    void deleteQuizData() {
+        if (courseId != null && quizId != null) {
+            Key key = Key.builder()
+                    .partitionValue(courseId)
+                    .sortValue(quizId)
+                    .build();
+            quizzesTable.deleteItem(key);
         }
     }
 
@@ -265,6 +279,50 @@ class CourseServiceTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Quiz 생성하면 DynamoDb로 저장하고 200 OK로 응답한다.")
+    void createQuiz_shouldReturnSuccessMessage() throws Exception {
+        // given
+        courseId = "course_1234";
+        contentId = "content_5678";
+        quizId = "quiz_" + UUID.randomUUID();
+        int quizIndex = 1;
+
+        CreateQuizRequestDto requestDto = CreateQuizRequestDto.builder()
+                .courseId(courseId)
+                .contentId(contentId)
+                .quizId(quizId)
+                .quizIndex(quizIndex)
+                .question("What is the capital of France?")
+                .options(List.of("Paris", "London", "Berlin", "Madrid"))
+                .answer(0)
+                .explanation("Paris is the capital city of France.")
+                .build();
+
+        String jsonRequest = objectMapper.writeValueAsString(requestDto);
+
+        // when & then
+        mockMvc.perform(post("/api/v1/admin/courses/sessions/contents/quizzes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isOk());
+
+        Quiz storedQuiz = quizzesTable.getItem(Key.builder()
+                .partitionValue(courseId)
+                .sortValue(quizId)
+                .build());
+
+        assertNotNull(storedQuiz, "Quiz should be saved in DynamoDB");
+        assertEquals(courseId, storedQuiz.getCourseId(), "Course ID should match");
+        assertEquals(contentId, storedQuiz.getContentId(), "Content ID should match");
+        assertEquals(quizId, storedQuiz.getQuizId(), "Quiz ID should match");
+        assertEquals(quizIndex, storedQuiz.getQuizIndex(), "Quiz Index should match");
+        assertEquals("What is the capital of France?", storedQuiz.getQuestion(), "Question should match");
+        assertEquals(List.of("Paris", "London", "Berlin", "Madrid"), storedQuiz.getOptions(), "Options should match");
+        assertEquals(0, storedQuiz.getAnswer(), "Answer should match");
+        assertEquals("Paris is the capital city of France.", storedQuiz.getExplanation(), "Explanation should match");
     }
 
 }

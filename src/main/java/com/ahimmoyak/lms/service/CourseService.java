@@ -3,6 +3,7 @@ package com.ahimmoyak.lms.service;
 import com.ahimmoyak.lms.dto.course.*;
 import com.ahimmoyak.lms.entity.Content;
 import com.ahimmoyak.lms.entity.Course;
+import com.ahimmoyak.lms.entity.Quiz;
 import com.ahimmoyak.lms.entity.Session;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import java.util.UUID;
 
 import static com.ahimmoyak.lms.entity.Content.CONTENTS_TABLE_SCHEMA;
 import static com.ahimmoyak.lms.entity.Course.COURSES_TABLE_SCHEMA;
+import static com.ahimmoyak.lms.entity.Quiz.QUIZZES_TABLE_SCHEMA;
 import static com.ahimmoyak.lms.entity.Session.SESSIONS_TABLE_SCHEMA;
 
 @Service
@@ -29,12 +31,14 @@ public class CourseService {
     private final DynamoDbTable<Course> coursesTable;
     private final DynamoDbTable<Session> sessionsTable;
     private final DynamoDbTable<Content> contentsTable;
+    private final DynamoDbTable<Quiz> quizzesTable;
 
     @Autowired
     public CourseService(DynamoDbEnhancedClient enhancedClient) {
         this.coursesTable = enhancedClient.table("courses", COURSES_TABLE_SCHEMA);
         this.sessionsTable = enhancedClient.table("sessions", SESSIONS_TABLE_SCHEMA);
         this.contentsTable = enhancedClient.table("contents", CONTENTS_TABLE_SCHEMA);
+        this.quizzesTable = enhancedClient.table("quiz", QUIZZES_TABLE_SCHEMA);
     }
 
     public ResponseEntity<CourseCreateResponseDto> createCourse(CourseCreateRequestDto requestDto) {
@@ -140,6 +144,33 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
+    public ResponseEntity<CreateQuizResponseDto> createQuiz(@Valid CreateQuizRequestDto requestDto) {
+        String quizId = requestDto.getQuizId();
+
+        if (requestDto.getQuizId() == null) {
+            quizId = "quiz_" + UUID.randomUUID();
+        }
+
+        Quiz quiz = Quiz.builder()
+                .courseId(requestDto.getCourseId())
+                .quizId(quizId)
+                .contentId(requestDto.getContentId())
+                .quizIndex(requestDto.getQuizIndex())
+                .question(requestDto.getQuestion())
+                .options(requestDto.getOptions())
+                .answer(requestDto.getAnswer())
+                .explanation(requestDto.getExplanation())
+                .build();
+
+        quizzesTable.putItem(quiz);
+
+        CreateQuizResponseDto responseDto = CreateQuizResponseDto.builder()
+                .quizId(quizId)
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
     private List<ContentDto> getContentByCourseIdAndSessionId(String courseId, String sessionId) {
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
@@ -171,5 +202,4 @@ public class CourseService {
                 .contentType(content.getContentType())
                 .build();
     }
-
 }

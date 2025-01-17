@@ -37,4 +37,10 @@ public class CourseController {
         return courseService.createContent(requestDto);
     }
 
+    @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
+    @PostMapping("/api/v1/admin/courses/sessions/contents/quizzes")
+    public ResponseEntity<CreateQuizResponseDto> createQuiz(@Valid @RequestBody CreateQuizRequestDto requestDto) {
+        return courseService.createQuiz(requestDto);
+    }
+
 }

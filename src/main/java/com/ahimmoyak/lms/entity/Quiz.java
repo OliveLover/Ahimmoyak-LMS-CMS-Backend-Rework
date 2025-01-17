@@ -10,7 +10,6 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
-import java.util.HashMap;
 import java.util.List;
 
 @Setter
@@ -20,10 +19,11 @@ import java.util.List;
 @DynamoDbBean
 public class Quiz {
 
-    public static final TableSchema<Quiz> QUIZ_TABLE_SCHEMA = TableSchema.fromClass(Quiz.class);
+    public static final TableSchema<Quiz> QUIZZES_TABLE_SCHEMA = TableSchema.fromClass(Quiz.class);
 
     private String courseId;
     private String quizId;
+    private String contentId;
     private int quizIndex;
     private String question;
     private List<String> options;
@@ -40,6 +40,11 @@ public class Quiz {
     @DynamoDbAttribute("quiz_id")
     public String getQuizId() {
         return quizId;
+    }
+
+    @DynamoDbAttribute("content_id")
+    public String getContentId() {
+        return contentId;
     }
 
     @DynamoDbAttribute("quiz_index")
