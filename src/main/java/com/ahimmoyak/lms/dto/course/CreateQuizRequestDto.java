@@ -21,17 +21,6 @@ public class CreateQuizRequestDto {
     @NotNull(message = "Content ID (contentId) is a required field.")
     private String contentId;
 
-    private String quizId;
-
-    @NotNull(message = "Quiz Index (quizIndex) is a required field.")
-    private int quizIndex;
-
-    private String question;
-    private List<String> options;
-
-    @NotNull(message = "Answer (answer) is a required field.")
-    private Integer answer;
-
-    private String explanation;
+    private List<QuizDto> quizzes;
 
 }

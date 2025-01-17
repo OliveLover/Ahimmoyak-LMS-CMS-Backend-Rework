@@ -17,6 +17,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -145,27 +146,34 @@ public class CourseService {
     }
 
     public ResponseEntity<CreateQuizResponseDto> createQuiz(@Valid CreateQuizRequestDto requestDto) {
-        String quizId = requestDto.getQuizId();
+        List<QuizDto> quizDtos = requestDto.getQuizzes();
+        List<String> quizIds = new ArrayList<>();
 
-        if (requestDto.getQuizId() == null) {
-            quizId = "quiz_" + UUID.randomUUID();
-        }
+        quizDtos.forEach(quizDto -> {
+            String quizId = quizDto.getQuizId();
 
-        Quiz quiz = Quiz.builder()
-                .courseId(requestDto.getCourseId())
-                .quizId(quizId)
-                .contentId(requestDto.getContentId())
-                .quizIndex(requestDto.getQuizIndex())
-                .question(requestDto.getQuestion())
-                .options(requestDto.getOptions())
-                .answer(requestDto.getAnswer())
-                .explanation(requestDto.getExplanation())
-                .build();
+            if (quizDto.getQuizId() == null) {
+                quizId = "quiz_" + UUID.randomUUID();
+            }
 
-        quizzesTable.putItem(quiz);
+            Quiz quiz = Quiz.builder()
+                    .courseId(requestDto.getCourseId())
+                    .quizId(quizId)
+                    .contentId(requestDto.getContentId())
+                    .quizIndex(quizDto.getQuizIndex())
+                    .question(quizDto.getQuestion())
+                    .options(quizDto.getOptions())
+                    .answer(quizDto.getAnswer())
+                    .explanation(quizDto.getExplanation())
+                    .build();
+
+            quizzesTable.putItem(quiz);
+
+            quizIds.add(quizId);
+        });
 
         CreateQuizResponseDto responseDto = CreateQuizResponseDto.builder()
-                .quizId(quizId)
+                .quizzes(quizIds)
                 .build();
 
         return ResponseEntity.ok(responseDto);

@@ -1,9 +1,6 @@
 package com.ahimmoyak.lms.service;
 
-import com.ahimmoyak.lms.dto.course.ContentCreateRequestDto;
-import com.ahimmoyak.lms.dto.course.CourseCreateRequestDto;
-import com.ahimmoyak.lms.dto.course.CreateQuizRequestDto;
-import com.ahimmoyak.lms.dto.course.SessionCreateRequestDto;
+import com.ahimmoyak.lms.dto.course.*;
 import com.ahimmoyak.lms.entity.Content;
 import com.ahimmoyak.lms.entity.Course;
 import com.ahimmoyak.lms.entity.Quiz;
@@ -22,13 +19,17 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static com.ahimmoyak.lms.dto.course.ContentType.VIDEO;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -49,7 +50,7 @@ class CourseServiceTest {
     private String courseId;
     private String sessionId;
     private String contentId;
-    private String quizId;
+    private List<String> quizIds = new ArrayList<>();
 
     @Autowired
     public CourseServiceTest(DynamoDbEnhancedClient enhancedClient) {
@@ -93,13 +94,16 @@ class CourseServiceTest {
 
     @AfterEach
     void deleteQuizData() {
-        if (courseId != null && quizId != null) {
-            Key key = Key.builder()
-                    .partitionValue(courseId)
-                    .sortValue(quizId)
-                    .build();
-            quizzesTable.deleteItem(key);
+        if (courseId != null && !quizIds.isEmpty()) {
+            for (String quizId : quizIds) {
+                Key key = Key.builder()
+                        .partitionValue(courseId)
+                        .sortValue(quizId)
+                        .build();
+                quizzesTable.deleteItem(key);
+            }
         }
+        quizIds.clear();
     }
 
     @Test
@@ -282,47 +286,70 @@ class CourseServiceTest {
     }
 
     @Test
-    @DisplayName("Quiz 생성하면 DynamoDb로 저장하고 200 OK로 응답한다.")
+    @DisplayName("여러 Quiz를 생성하면 DynamoDB에 저장하고 200 OK로 응답한다.")
     void createQuiz_shouldReturnSuccessMessage() throws Exception {
         // given
         courseId = "course_1234";
         contentId = "content_5678";
-        quizId = "quiz_" + UUID.randomUUID();
-        int quizIndex = 1;
+        String quizId_1 = "quiz_" + UUID.randomUUID();
+        String quizId_2 = "quiz_" + UUID.randomUUID();
+
+        List<QuizDto> quizDtos = List.of(
+                QuizDto.builder()
+                        .quizId(quizId_1)
+                        .quizIndex(1)
+                        .question("What is the capital of France?")
+                        .options(List.of("Paris", "London", "Berlin", "Madrid"))
+                        .answer(0)
+                        .explanation("Paris is the capital city of France.")
+                        .build(),
+                QuizDto.builder()
+                        .quizId(quizId_2)
+                        .quizIndex(2)
+                        .question("What is the capital of Germany?")
+                        .options(List.of("Berlin", "London", "Paris", "Madrid"))
+                        .answer(0)
+                        .explanation("Berlin is the capital city of Germany.")
+                        .build()
+        );
 
         CreateQuizRequestDto requestDto = CreateQuizRequestDto.builder()
                 .courseId(courseId)
                 .contentId(contentId)
-                .quizId(quizId)
-                .quizIndex(quizIndex)
-                .question("What is the capital of France?")
-                .options(List.of("Paris", "London", "Berlin", "Madrid"))
-                .answer(0)
-                .explanation("Paris is the capital city of France.")
+                .quizzes(quizDtos)
                 .build();
 
         String jsonRequest = objectMapper.writeValueAsString(requestDto);
 
         // when & then
-        mockMvc.perform(post("/api/v1/admin/courses/sessions/contents/quizzes")
+        mockMvc.perform(put("/api/v1/admin/courses/sessions/contents/quizzes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.quizzes", hasSize(2)))
+                .andExpect(jsonPath("$.quizzes[0]").isString())
+                .andExpect(jsonPath("$.quizzes[1]").isString());
 
-        Quiz storedQuiz = quizzesTable.getItem(Key.builder()
-                .partitionValue(courseId)
-                .sortValue(quizId)
-                .build());
+        for (QuizDto quizDto : quizDtos) {
+            String quizId = quizDto.getQuizId();
 
-        assertNotNull(storedQuiz, "Quiz should be saved in DynamoDB");
-        assertEquals(courseId, storedQuiz.getCourseId(), "Course ID should match");
-        assertEquals(contentId, storedQuiz.getContentId(), "Content ID should match");
-        assertEquals(quizId, storedQuiz.getQuizId(), "Quiz ID should match");
-        assertEquals(quizIndex, storedQuiz.getQuizIndex(), "Quiz Index should match");
-        assertEquals("What is the capital of France?", storedQuiz.getQuestion(), "Question should match");
-        assertEquals(List.of("Paris", "London", "Berlin", "Madrid"), storedQuiz.getOptions(), "Options should match");
-        assertEquals(0, storedQuiz.getAnswer(), "Answer should match");
-        assertEquals("Paris is the capital city of France.", storedQuiz.getExplanation(), "Explanation should match");
+            Quiz storedQuiz = quizzesTable.getItem(Key.builder()
+                    .partitionValue(courseId)
+                    .sortValue(quizId)
+                    .build());
+
+            quizIds.add(quizId);
+
+            assertNotNull(storedQuiz, "Quiz should be saved in DynamoDB");
+            assertEquals(courseId, storedQuiz.getCourseId(), "Course ID should match");
+            assertEquals(contentId, storedQuiz.getContentId(), "Content ID should match");
+            assertEquals(quizId, storedQuiz.getQuizId(), "Quiz ID should match");
+            assertEquals(quizDto.getQuizIndex(), storedQuiz.getQuizIndex(), "Quiz Index should match");
+            assertEquals(quizDto.getQuestion(), storedQuiz.getQuestion(), "Question should match");
+            assertEquals(quizDto.getOptions(), storedQuiz.getOptions(), "Options should match");
+            assertEquals(quizDto.getAnswer(), storedQuiz.getAnswer(), "Answer should match");
+            assertEquals(quizDto.getExplanation(), storedQuiz.getExplanation(), "Explanation should match");
+        }
     }
 
 }
