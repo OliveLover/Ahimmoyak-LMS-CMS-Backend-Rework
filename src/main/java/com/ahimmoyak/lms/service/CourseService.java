@@ -189,7 +189,24 @@ public class CourseService {
         return result.stream()
                 .flatMap(page -> page.items().stream())
                 .filter(content -> content.getSessionId().equals(sessionId))
-                .map(this::mapToContentDto)
+                .map(content -> {
+                    List<QuizDto> quizDtos = getQuizByCourseIdAndContentId(courseId, content.getContentId());
+                    return mapToContentDto(content, quizDtos);
+                })
+                .toList();
+    }
+
+    private List<QuizDto> getQuizByCourseIdAndContentId(String courseId, String contentId) {
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .build();
+
+        SdkIterable<Page<Quiz>> result = quizzesTable.query(queryRequest);
+
+        return result.stream()
+                .flatMap(page -> page.items().stream())
+                .filter(quiz -> quiz.getContentId().equals(contentId))
+                .map(this::mapToQuizDto)
                 .toList();
     }
 
@@ -202,12 +219,24 @@ public class CourseService {
                 .build();
     }
 
-    private ContentDto mapToContentDto(Content content) {
+    private ContentDto mapToContentDto(Content content, List<QuizDto> quizDtos) {
         return ContentDto.builder()
                 .contentId(content.getContentId())
                 .contentIndex(content.getContentIndex())
                 .contentTitle(content.getContentTitle())
                 .contentType(content.getContentType())
+                .quiz(quizDtos)
+                .build();
+    }
+
+    private QuizDto mapToQuizDto(Quiz quiz) {
+        return QuizDto.builder()
+                .quizId(quiz.getQuizId())
+                .quizIndex(quiz.getQuizIndex())
+                .question(quiz.getQuestion())
+                .options(quiz.getOptions())
+                .answer(quiz.getAnswer())
+                .explanation(quiz.getExplanation())
                 .build();
     }
 }
