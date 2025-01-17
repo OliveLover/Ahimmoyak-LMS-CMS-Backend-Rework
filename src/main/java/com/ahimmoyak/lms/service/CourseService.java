@@ -17,6 +17,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -40,6 +41,40 @@ public class CourseService {
         this.sessionsTable = enhancedClient.table("sessions", SESSIONS_TABLE_SCHEMA);
         this.contentsTable = enhancedClient.table("contents", CONTENTS_TABLE_SCHEMA);
         this.quizzesTable = enhancedClient.table("quiz", QUIZZES_TABLE_SCHEMA);
+    }
+
+    public ResponseEntity<ManagedCoursesResponseDto> getManagedCourses() {
+        SdkIterable<Page<Course>> result = coursesTable.scan();
+
+        List<ManagedCourseDto> courses = result.stream()
+                .flatMap(page -> page.items().stream())
+                .map(course -> {
+                    LocalDate activeStartDate = course.getActiveStartDate();
+                    LocalDate activeEndDate = course.getActiveEndDate();
+
+                    int remainingDuration = calculateDaysDifference(activeStartDate, activeEndDate);
+
+                    return ManagedCourseDto.builder()
+                            .courseId(course.getCourseId())
+                            .courseTitle(course.getCourseTitle())
+                            .status(course.getStatus())
+                            .activeStartDate(activeStartDate)
+                            .activeEndDate(activeEndDate)
+                            .instructor(course.getInstructor())
+                            .grade(course.getGrade())
+                            .category(course.getCategory())
+                            .setDuration(course.getSetDuration())
+                            .remainingDuration(remainingDuration)
+                            .fundingType(course.getFundingType())
+                            .build();
+                })
+                .toList();
+
+        ManagedCoursesResponseDto responseDto = ManagedCoursesResponseDto.builder()
+                .courses(courses)
+                .build();
+
+        return ResponseEntity.ok(responseDto);
     }
 
     public ResponseEntity<CourseCreateResponseDto> createCourse(CourseCreateRequestDto requestDto) {
@@ -179,6 +214,13 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
+    private int calculateDaysDifference(LocalDate statDate, LocalDate endDate) {
+        if (statDate == null || endDate == null) {
+            return 0;
+        }
+        return (int) ChronoUnit.DAYS.between(statDate, endDate);
+    }
+
     private List<ContentDto> getContentByCourseIdAndSessionId(String courseId, String sessionId) {
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
@@ -239,4 +281,5 @@ public class CourseService {
                 .explanation(quiz.getExplanation())
                 .build();
     }
+
 }

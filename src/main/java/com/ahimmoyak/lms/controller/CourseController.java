@@ -14,6 +14,12 @@ public class CourseController {
     private final CourseService courseService;
 
     @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
+    @GetMapping("/api/v1/admin/courses")
+    public ResponseEntity<ManagedCoursesResponseDto> getManagedCourses() {
+        return courseService.getManagedCourses();
+    }
+
+    @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
     @PostMapping("/api/v1/admin/courses")
     public ResponseEntity<CourseCreateResponseDto> createCourse(@Valid @RequestBody CourseCreateRequestDto requestDto) {
         return courseService.createCourse(requestDto);
