@@ -26,7 +26,7 @@ public class CourseController {
     }
 
     @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
-    @GetMapping("/api/v1/admin/courses/{courseId}")
+    @GetMapping("/api/v1/admin/courses/{courseId}/sessions")
     public ResponseEntity<CourseSessionsResponseDto> getCourseSessions(@PathVariable String courseId) {
         return courseService.getCourseSessions(courseId);
     }
