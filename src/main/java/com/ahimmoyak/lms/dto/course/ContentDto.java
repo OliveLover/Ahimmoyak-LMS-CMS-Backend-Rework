@@ -17,6 +17,6 @@ public class ContentDto {
     private int contentIndex;
     private String contentTitle;
     private ContentType contentType;
-    private List<QuizDto> quiz;
+    private List<QuizDto> quizzes;
 
 }

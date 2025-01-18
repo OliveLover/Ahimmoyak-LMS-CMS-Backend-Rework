@@ -308,7 +308,7 @@ public class CourseService {
                 .contentIndex(content.getContentIndex())
                 .contentTitle(content.getContentTitle())
                 .contentType(content.getContentType())
-                .quiz(quizDtos)
+                .quizzes(quizDtos)
                 .build();
     }
 
