@@ -22,19 +22,19 @@ public class CourseCreateRequestDto {
     private String courseTitle;
 
     private String courseIntroduce;
-    private String status;
+    private CourseStatus status;
     private LocalDate activeStartDate;
     private LocalDate activeEndDate;
     private String instructor;
     private String thumbnailPath;
-    private String grade;
-    private String category;
+    private CourseGrade grade;
+    private NCSClassification ncsClassification;
 
     @Min(value = 0, message = "The field 'setDuration' must be at least 0.")
     private int setDuration;
 
-    private String fundingType;
-    private List<String> cardType;
+    private FundingType fundingType;
+    private List<CardType> cardType;
     private LocalDate createdDate;
     private LocalDate modifiedDate;
 

@@ -15,14 +15,14 @@ public class ManagedCourseDto {
 
     private String courseId;
     private String courseTitle;
-    private String status;
+    private CourseStatus status;
     private LocalDate activeStartDate;
     private LocalDate activeEndDate;
     private String instructor;
-    private String grade;
-    private String category;
+    private CourseGrade grade;
+    private NCSClassification ncsClassification;
     private int setDuration;
     private int remainingDuration;
-    private String fundingType;
+    private FundingType fundingType;
 
 }

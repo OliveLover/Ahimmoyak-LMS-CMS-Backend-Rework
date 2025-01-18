@@ -52,7 +52,7 @@ public class CourseService {
                     LocalDate activeStartDate = course.getActiveStartDate();
                     LocalDate activeEndDate = course.getActiveEndDate();
 
-                    int remainingDuration = calculateDaysDifference(activeStartDate, activeEndDate);
+                    int remainingDuration = calculateDaysDifference(activeEndDate);
 
                     return ManagedCourseDto.builder()
                             .courseId(course.getCourseId())
@@ -62,7 +62,7 @@ public class CourseService {
                             .activeEndDate(activeEndDate)
                             .instructor(course.getInstructor())
                             .grade(course.getGrade())
-                            .category(course.getCategory())
+                            .ncsClassification(course.getNcsClassification())
                             .setDuration(course.getSetDuration())
                             .remainingDuration(remainingDuration)
                             .fundingType(course.getFundingType())
@@ -94,7 +94,7 @@ public class CourseService {
                 .instructor(requestDto.getInstructor())
                 .thumbnailPath(requestDto.getThumbnailPath())
                 .grade(requestDto.getGrade())
-                .category(requestDto.getCategory())
+                .ncsClassification(requestDto.getNcsClassification())
                 .setDuration(requestDto.getSetDuration())
                 .fundingType(requestDto.getFundingType())
                 .cardType(requestDto.getCardType())
@@ -214,11 +214,11 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
-    private int calculateDaysDifference(LocalDate statDate, LocalDate endDate) {
-        if (statDate == null || endDate == null) {
+    private int calculateDaysDifference(LocalDate endDate) {
+        if (endDate == null) {
             return 0;
         }
-        return (int) ChronoUnit.DAYS.between(statDate, endDate);
+        return (int) ChronoUnit.DAYS.between(LocalDate.now(), endDate);
     }
 
     private List<ContentDto> getContentByCourseIdAndSessionId(String courseId, String sessionId) {

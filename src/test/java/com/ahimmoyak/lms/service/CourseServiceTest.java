@@ -23,7 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.ahimmoyak.lms.dto.course.CardType.CORPORATE_TRAINING_SUPPORT_CARD;
+import static com.ahimmoyak.lms.dto.course.CardType.NATIONAL_EMPLOYMENT_SUPPORT_CARD;
 import static com.ahimmoyak.lms.dto.course.ContentType.VIDEO;
+import static com.ahimmoyak.lms.dto.course.CourseGrade.A;
+import static com.ahimmoyak.lms.dto.course.CourseStatus.ACTIVE;
+import static com.ahimmoyak.lms.dto.course.FundingType.REFUNDABLE;
+import static com.ahimmoyak.lms.dto.course.NCSClassification.BUSINESS_MANAGEMENT;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -116,16 +122,16 @@ class CourseServiceTest {
                 .courseId(courseId)
                 .courseTitle("Course Title")
                 .courseIntroduce("Course Introduction")
-                .status("ACTIVE")
+                .status(ACTIVE)
                 .activeStartDate(LocalDate.of(2025, 1, 1))
                 .activeEndDate(LocalDate.of(2025, 12, 31))
                 .instructor("Instructor Name")
                 .thumbnailPath("/path/to/thumbnail")
-                .grade("A")
-                .category("Science")
+                .grade(A)
+                .ncsClassification(BUSINESS_MANAGEMENT)
                 .setDuration(30)
-                .fundingType("Government")
-                .cardType(List.of("Type1", "Type2"))
+                .fundingType(REFUNDABLE)
+                .cardType(List.of(NATIONAL_EMPLOYMENT_SUPPORT_CARD, CORPORATE_TRAINING_SUPPORT_CARD))
                 .createdDate(LocalDate.now())
                 .modifiedDate(LocalDate.now())
                 .build();
@@ -146,16 +152,16 @@ class CourseServiceTest {
         assertEquals(courseId, storedCourse.getCourseId(), "Course ID should match");
         assertEquals("Course Title", storedCourse.getCourseTitle(), "Course Title should match");
         assertEquals("Course Introduction", storedCourse.getCourseIntroduce(), "Course Introduction should match");
-        assertEquals("ACTIVE", storedCourse.getStatus(), "Status should be ACTIVE");
+        assertEquals(ACTIVE, storedCourse.getStatus(), "Status should be ACTIVE");
         assertEquals(LocalDate.of(2025, 1, 1), storedCourse.getActiveStartDate(), "Start Date should match");
         assertEquals(LocalDate.of(2025, 12, 31), storedCourse.getActiveEndDate(), "End Date should match");
         assertEquals("Instructor Name", storedCourse.getInstructor(), "Instructor should match");
         assertEquals("/path/to/thumbnail", storedCourse.getThumbnailPath(), "Thumbnail path should match");
-        assertEquals("A", storedCourse.getGrade(), "Grade should match");
-        assertEquals("Science", storedCourse.getCategory(), "Category should match");
+        assertEquals(A, storedCourse.getGrade(), "Grade should match");
+        assertEquals(BUSINESS_MANAGEMENT, storedCourse.getNcsClassification(), "Category should match");
         assertEquals(30, storedCourse.getSetDuration(), "Duration should match");
-        assertEquals("Government", storedCourse.getFundingType(), "Funding Type should match");
-        assertEquals(List.of("Type1", "Type2"), storedCourse.getCardType(), "Card Types should match");
+        assertEquals(REFUNDABLE, storedCourse.getFundingType(), "Funding Type should match");
+        assertEquals(List.of(NATIONAL_EMPLOYMENT_SUPPORT_CARD, CORPORATE_TRAINING_SUPPORT_CARD), storedCourse.getCardType(), "Card Types should match");
 
 
     }
@@ -167,16 +173,16 @@ class CourseServiceTest {
         CourseCreateRequestDto requestDto = CourseCreateRequestDto.builder()
                 .courseTitle("Course Title")
                 .courseIntroduce("Course Introduction")
-                .status("ACTIVE")
+                .status(ACTIVE)
                 .activeStartDate(LocalDate.of(2025, 1, 1))
                 .activeEndDate(LocalDate.of(2025, 12, 31))
                 .instructor("Instructor Name")
                 .thumbnailPath("/path/to/thumbnail")
-                .grade("A")
-                .category("Science")
+                .grade(A)
+                .ncsClassification(BUSINESS_MANAGEMENT)
                 .setDuration(-1)
-                .fundingType("Government")
-                .cardType(List.of("Type1", "Type2"))
+                .fundingType(REFUNDABLE)
+                .cardType(List.of(NATIONAL_EMPLOYMENT_SUPPORT_CARD, CORPORATE_TRAINING_SUPPORT_CARD))
                 .createdDate(LocalDate.now())
                 .modifiedDate(LocalDate.now())
                 .build();

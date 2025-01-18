@@ -1,5 +1,6 @@
 package com.ahimmoyak.lms.entity;
 
+import com.ahimmoyak.lms.dto.course.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -24,16 +25,16 @@ public class Course {
     private String courseId;
     private String courseTitle;
     private String courseIntroduce;
-    private String status;
+    private CourseStatus status;
     private LocalDate activeStartDate;
     private LocalDate activeEndDate;
     private String instructor;
     private String thumbnailPath;
-    private String grade;
-    private String category;
+    private CourseGrade grade;
+    private NCSClassification ncsClassification;
     private int setDuration;
-    private String fundingType;
-    private List<String> cardType;
+    private FundingType fundingType;
+    private List<CardType> cardType;
     private LocalDate createdDate;
     private LocalDate modifiedDate;
 
@@ -54,7 +55,7 @@ public class Course {
     }
 
     @DynamoDbAttribute("status")
-    public String getStatus() {
+    public CourseStatus getStatus() {
         return status;
     }
 
@@ -79,13 +80,13 @@ public class Course {
     }
 
     @DynamoDbAttribute("grade")
-    public String getGrade() {
+    public CourseGrade getGrade() {
         return grade;
     }
 
     @DynamoDbAttribute("category")
-    public String getCategory() {
-        return category;
+    public NCSClassification getNcsClassification() {
+        return ncsClassification;
     }
 
     @DynamoDbAttribute("set_duration")
@@ -94,12 +95,12 @@ public class Course {
     }
 
     @DynamoDbAttribute("funding_type")
-    public String getFundingType() {
+    public FundingType getFundingType() {
         return fundingType;
     }
 
     @DynamoDbAttribute("card_type")
-    public List<String> getCardType() {
+    public List<CardType> getCardType() {
         return cardType;
     }
 
