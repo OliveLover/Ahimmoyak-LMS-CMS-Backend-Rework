@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionDto> handleBadRequestException(BadRequestException ex) {
         ExceptionDto exceptionDto = ExceptionDto.builder()
                 .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                .message(List.of(ex.getMessage()))  // List<String>으로 처리
+                .message(List.of(ex.getMessage()))
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .build();
@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionDto> handleUnauthorizedException(UnauthorizedException ex) {
         ExceptionDto exceptionDto = ExceptionDto.builder()
                 .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
-                .message(List.of(ex.getMessage()))  // List<String>으로 처리
+                .message(List.of(ex.getMessage()))
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.UNAUTHORIZED.value())
                 .build();
@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionDto> handleForbiddenException(ForbiddenException ex) {
         ExceptionDto exceptionDto = ExceptionDto.builder()
                 .error(HttpStatus.FORBIDDEN.getReasonPhrase())
-                .message(List.of(ex.getMessage()))  // List<String>으로 처리
+                .message(List.of(ex.getMessage()))
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.FORBIDDEN.value())
                 .build();
@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionDto> handleNotFoundException(NotFoundException ex) {
         ExceptionDto exceptionDto = ExceptionDto.builder()
                 .error(HttpStatus.NOT_FOUND.getReasonPhrase())
-                .message(List.of(ex.getMessage()))  // List<String>으로 처리
+                .message(List.of(ex.getMessage()))
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.NOT_FOUND.value())
                 .build();
@@ -73,7 +73,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionDto> handleMethodNotAllowedException(MethodNotAllowedException ex) {
         ExceptionDto exceptionDto = ExceptionDto.builder()
                 .error(HttpStatus.METHOD_NOT_ALLOWED.getReasonPhrase())
-                .message(List.of(ex.getMessage()))  // List<String>으로 처리
+                .message(List.of(ex.getMessage()))
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.METHOD_NOT_ALLOWED.value())
                 .build();
@@ -86,7 +86,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionDto> handleConflictException(ConflictException ex) {
         ExceptionDto exceptionDto = ExceptionDto.builder()
                 .error(HttpStatus.CONFLICT.getReasonPhrase())
-                .message(List.of(ex.getMessage()))  // List<String>으로 처리
+                .message(List.of(ex.getMessage()))
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.CONFLICT.value())
                 .build();
@@ -99,7 +99,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionDto> handleInternalServerErrorException(InternalServerErrorException ex) {
         ExceptionDto exceptionDto = ExceptionDto.builder()
                 .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
-                .message(List.of(ex.getMessage()))  // List<String>으로 처리
+                .message(List.of(ex.getMessage()))
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .build();
@@ -112,7 +112,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionDto> handleGeneralException(Exception ex) {
         ExceptionDto exceptionDto = ExceptionDto.builder()
                 .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
-                .message(List.of("An unexpected error occurred."))  // List<String>으로 처리
+                .message(List.of("An unexpected error occurred."))
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .build();

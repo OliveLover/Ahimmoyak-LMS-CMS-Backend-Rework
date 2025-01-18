@@ -5,6 +5,7 @@ import com.ahimmoyak.lms.entity.Content;
 import com.ahimmoyak.lms.entity.Course;
 import com.ahimmoyak.lms.entity.Quiz;
 import com.ahimmoyak.lms.entity.Session;
+import com.ahimmoyak.lms.exception.NotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -78,7 +79,43 @@ public class CourseService {
     }
 
     public ResponseEntity<AdminCourseDetailsResponseDto> getAdminCourseDetails(String courseId) {
-        return null;
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .build();
+
+        SdkIterable<Page<Course>> courseResult = coursesTable.query(queryRequest);
+        Course course = courseResult.stream()
+                .flatMap(page -> page.items().stream())
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Course not found with ID: " + courseId));
+
+        SdkIterable<Page<Session>> sessionResult = sessionsTable.query(queryRequest);
+        List<SessionDto> sessionDtos = sessionResult.stream()
+                .flatMap(page -> page.items().stream())
+                .map(session -> {
+                    List<ContentDto> contentDtos = getContentByCourseIdAndSessionId(courseId, session.getSessionId());
+                    return mapToSessionDto(session, contentDtos);
+                })
+                .toList();
+
+        AdminCourseDetailsResponseDto responseDto = AdminCourseDetailsResponseDto.builder()
+                .courseId(course.getCourseId())
+                .courseTitle(course.getCourseTitle())
+                .courseIntroduce(course.getCourseIntroduce())
+                .status(course.getStatus())
+                .activeStartDate(course.getActiveStartDate())
+                .activeEndDate(course.getActiveEndDate())
+                .instructor(course.getInstructor())
+                .thumbnailPath(course.getThumbnailPath())
+                .grade(course.getGrade())
+                .ncsClassification(course.getNcsClassification())
+                .setDuration(course.getSetDuration())
+                .fundingType(course.getFundingType())
+                .cardType(course.getCardType())
+                .sessions(sessionDtos)
+                .build();
+
+        return ResponseEntity.ok(responseDto);
     }
 
     public ResponseEntity<AdminCourseCreateResponseDto> createCourse(AdminCourseCreateRequestDto requestDto) {
