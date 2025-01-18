@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateQuizRequestDto {
+public class AdminCreateQuizRequestDto {
 
     @NotNull(message = "Course ID (courseId) is a required field.")
     private String courseId;

@@ -5,14 +5,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ManagedCoursesResponseDto {
+public class AdminSessionCreateResponseDto {
 
-    private List<ManagedCourseDto> courses;
+    private String sessionId;
 
 }

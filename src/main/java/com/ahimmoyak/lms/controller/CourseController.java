@@ -15,37 +15,43 @@ public class CourseController {
 
     @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
     @GetMapping("/api/v1/admin/courses")
-    public ResponseEntity<ManagedCoursesResponseDto> getManagedCourses() {
+    public ResponseEntity<AdminManagedCoursesResponseDto> getManagedCourses() {
         return courseService.getManagedCourses();
     }
 
     @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
+    @GetMapping("/api/v1/admin/courses/{courseId}")
+    public ResponseEntity<AdminCourseDetailsResponseDto> getAdminCourseDetails(@PathVariable String courseId) {
+        return courseService.getAdminCourseDetails(courseId);
+    }
+
+    @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
     @PostMapping("/api/v1/admin/courses")
-    public ResponseEntity<CourseCreateResponseDto> createCourse(@Valid @RequestBody CourseCreateRequestDto requestDto) {
+    public ResponseEntity<AdminCourseCreateResponseDto> createCourse(@Valid @RequestBody AdminCourseCreateRequestDto requestDto) {
         return courseService.createCourse(requestDto);
     }
 
     @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
     @GetMapping("/api/v1/admin/courses/{courseId}/sessions")
-    public ResponseEntity<CourseSessionsResponseDto> getCourseSessions(@PathVariable String courseId) {
+    public ResponseEntity<AdminCourseSessionsResponseDto> getCourseSessions(@PathVariable String courseId) {
         return courseService.getCourseSessions(courseId);
     }
 
     @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
     @PostMapping("/api/v1/admin/courses/sessions")
-    public ResponseEntity<SessionCreateResponseDto> createSession(@Valid @RequestBody SessionCreateRequestDto requestDto) {
+    public ResponseEntity<AdminSessionCreateResponseDto> createSession(@Valid @RequestBody AdminSessionCreateRequestDto requestDto) {
         return courseService.createSession(requestDto);
     }
 
     @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
     @PostMapping("/api/v1/admin/courses/sessions/contents")
-    public ResponseEntity<ContentCreateResponseDto> createContent(@Valid @RequestBody ContentCreateRequestDto requestDto) {
+    public ResponseEntity<AdminContentCreateResponseDto> createContent(@Valid @RequestBody AdminContentCreateRequestDto requestDto) {
         return courseService.createContent(requestDto);
     }
 
     @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
     @PutMapping("/api/v1/admin/courses/sessions/contents/quizzes")
-    public ResponseEntity<CreateQuizResponseDto> createQuiz(@Valid @RequestBody CreateQuizRequestDto requestDto) {
+    public ResponseEntity<AdminCreateQuizResponseDto> createQuiz(@Valid @RequestBody AdminCreateQuizRequestDto requestDto) {
         return courseService.createQuiz(requestDto);
     }
 

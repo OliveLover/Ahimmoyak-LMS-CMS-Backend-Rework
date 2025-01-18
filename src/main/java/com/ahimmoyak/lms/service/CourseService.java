@@ -43,10 +43,10 @@ public class CourseService {
         this.quizzesTable = enhancedClient.table("quiz", QUIZZES_TABLE_SCHEMA);
     }
 
-    public ResponseEntity<ManagedCoursesResponseDto> getManagedCourses() {
+    public ResponseEntity<AdminManagedCoursesResponseDto> getManagedCourses() {
         SdkIterable<Page<Course>> result = coursesTable.scan();
 
-        List<ManagedCourseDto> courses = result.stream()
+        List<AdminManagedCourseDto> courses = result.stream()
                 .flatMap(page -> page.items().stream())
                 .map(course -> {
                     LocalDate activeStartDate = course.getActiveStartDate();
@@ -54,7 +54,7 @@ public class CourseService {
 
                     int remainingDuration = calculateDaysDifference(activeEndDate);
 
-                    return ManagedCourseDto.builder()
+                    return AdminManagedCourseDto.builder()
                             .courseId(course.getCourseId())
                             .courseTitle(course.getCourseTitle())
                             .status(course.getStatus())
@@ -70,14 +70,18 @@ public class CourseService {
                 })
                 .toList();
 
-        ManagedCoursesResponseDto responseDto = ManagedCoursesResponseDto.builder()
+        AdminManagedCoursesResponseDto responseDto = AdminManagedCoursesResponseDto.builder()
                 .courses(courses)
                 .build();
 
         return ResponseEntity.ok(responseDto);
     }
 
-    public ResponseEntity<CourseCreateResponseDto> createCourse(CourseCreateRequestDto requestDto) {
+    public ResponseEntity<AdminCourseDetailsResponseDto> getAdminCourseDetails(String courseId) {
+        return null;
+    }
+
+    public ResponseEntity<AdminCourseCreateResponseDto> createCourse(AdminCourseCreateRequestDto requestDto) {
         String courseId = requestDto.getCourseId();
 
         if (requestDto.getCourseId() == null) {
@@ -103,14 +107,14 @@ public class CourseService {
                 .build();
         coursesTable.putItem(course);
 
-        CourseCreateResponseDto responseDto = CourseCreateResponseDto.builder()
+        AdminCourseCreateResponseDto responseDto = AdminCourseCreateResponseDto.builder()
                 .courseId(courseId)
                 .build();
 
         return ResponseEntity.ok(responseDto);
     }
 
-    public ResponseEntity<CourseSessionsResponseDto> getCourseSessions(String courseId) {
+    public ResponseEntity<AdminCourseSessionsResponseDto> getCourseSessions(String courseId) {
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
                 .build();
@@ -124,14 +128,14 @@ public class CourseService {
                 })
                 .toList();
 
-        CourseSessionsResponseDto responseDto = CourseSessionsResponseDto.builder()
+        AdminCourseSessionsResponseDto responseDto = AdminCourseSessionsResponseDto.builder()
                 .sessions(sessionDtos)
                 .build();
 
         return ResponseEntity.ok(responseDto);
     }
 
-    public ResponseEntity<SessionCreateResponseDto> createSession(SessionCreateRequestDto requestDto) {
+    public ResponseEntity<AdminSessionCreateResponseDto> createSession(AdminSessionCreateRequestDto requestDto) {
         String sessionId = requestDto.getSessionId();
 
         if (requestDto.getSessionId() == null) {
@@ -147,7 +151,7 @@ public class CourseService {
 
         sessionsTable.putItem(session);
 
-        SessionCreateResponseDto responseDto = SessionCreateResponseDto.builder()
+        AdminSessionCreateResponseDto responseDto = AdminSessionCreateResponseDto.builder()
                 .sessionId(sessionId)
                 .build();
 
@@ -155,7 +159,7 @@ public class CourseService {
 
     }
 
-    public ResponseEntity<ContentCreateResponseDto> createContent(@Valid ContentCreateRequestDto requestDto) {
+    public ResponseEntity<AdminContentCreateResponseDto> createContent(@Valid AdminContentCreateRequestDto requestDto) {
         String contentId = requestDto.getContentId();
 
         if (requestDto.getContentId() == null) {
@@ -173,14 +177,14 @@ public class CourseService {
 
         contentsTable.putItem(content);
 
-        ContentCreateResponseDto responseDto = ContentCreateResponseDto.builder()
+        AdminContentCreateResponseDto responseDto = AdminContentCreateResponseDto.builder()
                 .contentId(contentId)
                 .build();
 
         return ResponseEntity.ok(responseDto);
     }
 
-    public ResponseEntity<CreateQuizResponseDto> createQuiz(@Valid CreateQuizRequestDto requestDto) {
+    public ResponseEntity<AdminCreateQuizResponseDto> createQuiz(@Valid AdminCreateQuizRequestDto requestDto) {
         List<QuizDto> quizDtos = requestDto.getQuizzes();
         List<String> quizIds = new ArrayList<>();
 
@@ -207,7 +211,7 @@ public class CourseService {
             quizIds.add(quizId);
         });
 
-        CreateQuizResponseDto responseDto = CreateQuizResponseDto.builder()
+        AdminCreateQuizResponseDto responseDto = AdminCreateQuizResponseDto.builder()
                 .quizzes(quizIds)
                 .build();
 

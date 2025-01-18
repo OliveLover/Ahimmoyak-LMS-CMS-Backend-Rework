@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SessionCreateRequestDto {
+public class AdminSessionCreateRequestDto {
 
     @NotNull(message = "Course ID (courseId) is a required field.")
     private String courseId;

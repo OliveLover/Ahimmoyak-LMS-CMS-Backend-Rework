@@ -11,8 +11,8 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CourseSessionsResponseDto {
+public class AdminCreateQuizResponseDto {
 
-    private List<SessionDto> sessions;
+    private List<String> quizzes;
 
 }

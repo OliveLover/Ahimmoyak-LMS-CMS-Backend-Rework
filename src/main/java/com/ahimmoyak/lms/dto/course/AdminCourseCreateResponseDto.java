@@ -5,14 +5,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateQuizResponseDto {
+public class AdminCourseCreateResponseDto {
 
-    private List<String> quizzes;
+    private String courseId;
 
 }

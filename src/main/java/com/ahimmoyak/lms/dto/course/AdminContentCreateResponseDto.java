@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SessionCreateResponseDto {
+public class AdminContentCreateResponseDto {
 
-    private String sessionId;
+    private String contentId;
 
 }
