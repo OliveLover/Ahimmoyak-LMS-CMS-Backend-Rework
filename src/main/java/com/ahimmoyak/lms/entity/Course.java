@@ -84,7 +84,7 @@ public class Course {
         return grade;
     }
 
-    @DynamoDbAttribute("category")
+    @DynamoDbAttribute("ncs_classification")
     public NCSClassification getNcsClassification() {
         return ncsClassification;
     }
