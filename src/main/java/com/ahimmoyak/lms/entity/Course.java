@@ -14,7 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Setter
-@Builder
+@Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamoDbBean

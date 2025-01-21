@@ -121,11 +121,12 @@ public class CourseService {
         String courseId = requestDto.getCourseId();
 
         Course existingCourse = coursesTable.getItem(r -> r.key(k -> k.partitionValue(courseId)));
+
         if (existingCourse == null) {
             throw new NotFoundException("The course with the given courseId does not exist.");
         }
 
-        Course updatedCourse = Course.builder()
+        Course updatedCourse = existingCourse.toBuilder()
                 .courseId(existingCourse.getCourseId())
                 .courseTitle(requestDto.getCourseTitle() != null ? requestDto.getCourseTitle() : existingCourse.getCourseTitle())
                 .courseIntroduce(requestDto.getCourseIntroduce() != null ? requestDto.getCourseIntroduce() : existingCourse.getCourseIntroduce())
@@ -143,7 +144,14 @@ public class CourseService {
                 .modifiedDate(LocalDate.now())
                 .build();
 
-        coursesTable.putItem(updatedCourse);
+        UpdateItemEnhancedRequest<Course> enhancedRequest = UpdateItemEnhancedRequest.builder(Course.class)
+                .item(updatedCourse)
+                .conditionExpression(Expression.builder()
+                        .expression("attribute_exists(course_id)")
+                        .build())
+                .build();
+
+        coursesTable.updateItem(enhancedRequest);
 
         MessageResponseDto responseDto = MessageResponseDto.builder()
                 .message("Course updated successfully.")
