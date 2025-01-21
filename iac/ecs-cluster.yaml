@@ -122,6 +122,7 @@ Resources:
       TaskDefinition: !Ref ECSTaskDefinition
       LaunchType: FARGATE
       DesiredCount: 1
+      ServiceName: ahimmoyak-ecs-service
       NetworkConfiguration:
         AwsvpcConfiguration:
           Subnets:
