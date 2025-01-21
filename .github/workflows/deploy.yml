@@ -54,3 +54,12 @@ jobs:
       - name: Push Docker image to ECR
         run: |
           docker push ${{ secrets.AWS_ECR_URI }}:latest
+
+      # Step 9: ECS 서비스 업데이트
+      - name: Update ECS service with new image
+        run: |
+          aws ecs update-service \
+            --cluster ahimmoyak-ecs-cluster \
+            --service ahimmoyak-ecs-service \
+            --force-new-deployment \
+            --task-definition ahimmoyak-fargate-task
