@@ -1,0 +1,55 @@
+name: Deploy to ECS
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: GitHub 저장소에서 코드를 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: JDK 21 설치
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # Step 3: Create application.yml from Secrets
+      - name: Create application.yml from Secrets
+        run: |
+          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
+
+      # Step 4: Docker 이미지 빌드
+      - name: Build Docker image
+        run: |
+          docker build -t ahimmoyak/lms-deploy-be .
+
+      # Step 5: AWS CLI 설정 (AWS 자격 증명 설정)
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Step 6: 도커 이미지 태그
+      - name: Tag Docker image
+        run: |
+          docker tag ahimmoyak/lms-deploy-be:latest ${{ secrets.AWS_ECR_URI }}:latest
+
+      # Step 7: ECR에 로그인
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Step 8: Docker 이미지 ECR에 푸시
+      - name: Push Docker image to ECR
+        run: |
+          docker push ${{ secrets.AWS_ECR_URI }}:latest
