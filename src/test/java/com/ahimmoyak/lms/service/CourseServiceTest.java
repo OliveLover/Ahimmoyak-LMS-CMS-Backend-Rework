@@ -197,6 +197,76 @@ class CourseServiceTest {
     }
 
     @Test
+    @DisplayName("훈련과정을 수정하면 DynamoDb에서 수정된 데이터가 반영된다.")
+    void updateCourse_shouldUpdateCourseData() throws Exception {
+        // given
+        courseId = "course_" + UUID.randomUUID();
+        Course existingCourse = Course.builder()
+                .courseId(courseId)
+                .courseTitle("Original Title")
+                .courseIntroduce("Original Introduction")
+                .status(ACTIVE)
+                .activeStartDate(LocalDate.of(2025, 1, 1))
+                .activeEndDate(LocalDate.of(2025, 12, 31))
+                .instructor("Original Instructor")
+                .thumbnailPath("/original/path/to/thumbnail")
+                .grade(A)
+                .ncsClassification(BUSINESS_MANAGEMENT)
+                .setDuration(30)
+                .fundingType(REFUNDABLE)
+                .cardType(List.of(NATIONAL_EMPLOYMENT_SUPPORT_CARD))
+                .createdDate(LocalDate.now())
+                .modifiedDate(LocalDate.now())
+                .build();
+
+        coursesTable.putItem(existingCourse);
+
+        AdminUpdateCourseRequestDto requestDto = AdminUpdateCourseRequestDto.builder()
+                .courseId(courseId)
+                .courseTitle("Updated Title")
+                .courseIntroduce("Updated Introduction")
+                .status(null)
+                .activeStartDate(LocalDate.of(2025, 6, 1))
+                .activeEndDate(null)
+                .instructor("Updated Instructor")
+                .thumbnailPath("/updated/path/to/thumbnail")
+                .grade(null)
+                .ncsClassification(null)
+                .setDuration(60)
+                .fundingType(null)
+                .cardType(List.of(CORPORATE_TRAINING_SUPPORT_CARD))
+                .build();
+
+        String jsonRequest = objectMapper.writeValueAsString(requestDto);
+
+        // when
+        mockMvc.perform(put("/api/v1/admin/courses")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Course updated successfully."));
+
+        // then
+        Course updatedCourse = coursesTable.getItem(Key.builder()
+                .partitionValue(courseId)
+                .build());
+
+        assertNotNull(updatedCourse, "Updated course should exist in DynamoDB");
+        assertEquals("Updated Title", updatedCourse.getCourseTitle(), "Course Title should be updated");
+        assertEquals("Updated Introduction", updatedCourse.getCourseIntroduce(), "Course Introduction should be updated");
+        assertEquals(ACTIVE, updatedCourse.getStatus(), "Course status should remain unchanged");
+        assertEquals(LocalDate.of(2025, 6, 1), updatedCourse.getActiveStartDate(), "Active start date should be updated");
+        assertEquals(LocalDate.of(2025, 12, 31), updatedCourse.getActiveEndDate(), "Active end date should remain unchanged");
+        assertEquals("Updated Instructor", updatedCourse.getInstructor(), "Instructor should be updated");
+        assertEquals("/updated/path/to/thumbnail", updatedCourse.getThumbnailPath(), "Thumbnail path should be updated");
+        assertEquals(A, updatedCourse.getGrade(), "Grade should remain unchanged");
+        assertEquals(BUSINESS_MANAGEMENT, updatedCourse.getNcsClassification(), "NCS classification should remain unchanged");
+        assertEquals(60, updatedCourse.getSetDuration(), "Duration should be updated");
+        assertEquals(REFUNDABLE, updatedCourse.getFundingType(), "Funding type should remain unchanged");
+        assertEquals(List.of(CORPORATE_TRAINING_SUPPORT_CARD), updatedCourse.getCardType(), "Card type should be updated");
+    }
+
+    @Test
     @DisplayName("Session 생성하면 DynamoDb로 저장하고 200 OK로 응답한다.")
     void createSession_shouldReturnSuccessMessage() throws Exception {
         // given

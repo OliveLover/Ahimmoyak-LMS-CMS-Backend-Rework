@@ -1,12 +1,12 @@
 package com.ahimmoyak.lms.service;
 
+import com.ahimmoyak.lms.dto.MessageResponseDto;
 import com.ahimmoyak.lms.dto.course.*;
 import com.ahimmoyak.lms.entity.Content;
 import com.ahimmoyak.lms.entity.Course;
 import com.ahimmoyak.lms.entity.Quiz;
 import com.ahimmoyak.lms.entity.Session;
 import com.ahimmoyak.lms.exception.NotFoundException;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -78,6 +78,76 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
+    public ResponseEntity<AdminCourseCreateResponseDto> createCourse(AdminCourseCreateRequestDto requestDto) {
+        String courseId = requestDto.getCourseId();
+
+        if (requestDto.getCourseId() == null) {
+            courseId = "course_" + UUID.randomUUID();
+        }
+
+        Course course = Course.builder()
+                .courseId(courseId)
+                .courseTitle(requestDto.getCourseTitle())
+                .courseIntroduce(requestDto.getCourseIntroduce())
+                .status(requestDto.getStatus())
+                .activeStartDate(requestDto.getActiveStartDate())
+                .activeEndDate(requestDto.getActiveEndDate())
+                .instructor(requestDto.getInstructor())
+                .thumbnailPath(requestDto.getThumbnailPath())
+                .grade(requestDto.getGrade())
+                .ncsClassification(requestDto.getNcsClassification())
+                .setDuration(requestDto.getSetDuration())
+                .fundingType(requestDto.getFundingType())
+                .cardType(requestDto.getCardType())
+                .createdDate(LocalDate.now())
+                .modifiedDate(LocalDate.now())
+                .build();
+
+        coursesTable.putItem(course);
+
+        AdminCourseCreateResponseDto responseDto = AdminCourseCreateResponseDto.builder()
+                .courseId(courseId)
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    public ResponseEntity<MessageResponseDto> updateCourse(AdminUpdateCourseRequestDto requestDto) {
+
+        String courseId = requestDto.getCourseId();
+
+        Course existingCourse = coursesTable.getItem(r -> r.key(k -> k.partitionValue(courseId)));
+        if (existingCourse == null) {
+            throw new NotFoundException("The course with the given courseId does not exist.");
+        }
+
+        Course updatedCourse = Course.builder()
+                .courseId(existingCourse.getCourseId())
+                .courseTitle(requestDto.getCourseTitle() != null ? requestDto.getCourseTitle() : existingCourse.getCourseTitle())
+                .courseIntroduce(requestDto.getCourseIntroduce() != null ? requestDto.getCourseIntroduce() : existingCourse.getCourseIntroduce())
+                .status(requestDto.getStatus() != null ? requestDto.getStatus() : existingCourse.getStatus())
+                .activeStartDate(requestDto.getActiveStartDate() != null ? requestDto.getActiveStartDate() : existingCourse.getActiveStartDate())
+                .activeEndDate(requestDto.getActiveEndDate() != null ? requestDto.getActiveEndDate() : existingCourse.getActiveEndDate())
+                .instructor(requestDto.getInstructor() != null ? requestDto.getInstructor() : existingCourse.getInstructor())
+                .thumbnailPath(requestDto.getThumbnailPath() != null ? requestDto.getThumbnailPath() : existingCourse.getThumbnailPath())
+                .grade(requestDto.getGrade() != null ? requestDto.getGrade() : existingCourse.getGrade())
+                .ncsClassification(requestDto.getNcsClassification() != null ? requestDto.getNcsClassification() : existingCourse.getNcsClassification())
+                .setDuration(requestDto.getSetDuration() != 0 ? requestDto.getSetDuration() : existingCourse.getSetDuration())
+                .fundingType(requestDto.getFundingType() != null ? requestDto.getFundingType() : existingCourse.getFundingType())
+                .cardType(requestDto.getCardType() != null ? requestDto.getCardType() : existingCourse.getCardType())
+                .createdDate(existingCourse.getCreatedDate())
+                .modifiedDate(LocalDate.now())
+                .build();
+
+        coursesTable.putItem(updatedCourse);
+
+        MessageResponseDto responseDto = MessageResponseDto.builder()
+                .message("Course updated successfully.")
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
     public ResponseEntity<AdminCourseDetailsResponseDto> getAdminCourseDetails(String courseId) {
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
@@ -113,39 +183,6 @@ public class CourseService {
                 .fundingType(course.getFundingType())
                 .cardType(course.getCardType())
                 .sessions(sessionDtos)
-                .build();
-
-        return ResponseEntity.ok(responseDto);
-    }
-
-    public ResponseEntity<AdminCourseCreateResponseDto> createCourse(AdminCourseCreateRequestDto requestDto) {
-        String courseId = requestDto.getCourseId();
-
-        if (requestDto.getCourseId() == null) {
-            courseId = "course_" + UUID.randomUUID();
-        }
-
-        Course course = Course.builder()
-                .courseId(courseId)
-                .courseTitle(requestDto.getCourseTitle())
-                .courseIntroduce(requestDto.getCourseIntroduce())
-                .status(requestDto.getStatus())
-                .activeStartDate(requestDto.getActiveStartDate())
-                .activeEndDate(requestDto.getActiveEndDate())
-                .instructor(requestDto.getInstructor())
-                .thumbnailPath(requestDto.getThumbnailPath())
-                .grade(requestDto.getGrade())
-                .ncsClassification(requestDto.getNcsClassification())
-                .setDuration(requestDto.getSetDuration())
-                .fundingType(requestDto.getFundingType())
-                .cardType(requestDto.getCardType())
-                .createdDate(LocalDate.now())
-                .modifiedDate(LocalDate.now())
-                .build();
-        coursesTable.putItem(course);
-
-        AdminCourseCreateResponseDto responseDto = AdminCourseCreateResponseDto.builder()
-                .courseId(courseId)
                 .build();
 
         return ResponseEntity.ok(responseDto);
@@ -196,7 +233,7 @@ public class CourseService {
 
     }
 
-    public ResponseEntity<AdminContentCreateResponseDto> createContent(@Valid AdminContentCreateRequestDto requestDto) {
+    public ResponseEntity<AdminContentCreateResponseDto> createContent(AdminContentCreateRequestDto requestDto) {
         String contentId = requestDto.getContentId();
 
         if (requestDto.getContentId() == null) {
@@ -221,7 +258,7 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
-    public ResponseEntity<AdminCreateQuizResponseDto> createQuiz(@Valid AdminCreateQuizRequestDto requestDto) {
+    public ResponseEntity<AdminCreateQuizResponseDto> createQuiz(AdminCreateQuizRequestDto requestDto) {
         List<QuizDto> quizDtos = requestDto.getQuizzes();
         List<String> quizIds = new ArrayList<>();
 
