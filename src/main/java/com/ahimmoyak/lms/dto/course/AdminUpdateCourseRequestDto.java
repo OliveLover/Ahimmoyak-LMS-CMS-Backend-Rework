@@ -2,6 +2,7 @@ package com.ahimmoyak.lms.dto.course;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,6 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 public class AdminUpdateCourseRequestDto {
 
+    @NotNull(message = "Course ID (courseId) is a required field.")
     private String courseId;
 
     @NotBlank(message = "Course title must not be empty or null")

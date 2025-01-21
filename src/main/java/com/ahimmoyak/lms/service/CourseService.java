@@ -7,15 +7,18 @@ import com.ahimmoyak.lms.entity.Course;
 import com.ahimmoyak.lms.entity.Quiz;
 import com.ahimmoyak.lms.entity.Session;
 import com.ahimmoyak.lms.exception.NotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -28,6 +31,7 @@ import static com.ahimmoyak.lms.entity.Course.COURSES_TABLE_SCHEMA;
 import static com.ahimmoyak.lms.entity.Quiz.QUIZZES_TABLE_SCHEMA;
 import static com.ahimmoyak.lms.entity.Session.SESSIONS_TABLE_SCHEMA;
 
+@Slf4j
 @Service
 public class CourseService {
 
@@ -233,10 +237,36 @@ public class CourseService {
 
     }
 
-    public ResponseEntity<AdminUpdateSessionResponseDto> updateSession(AdminUpdateSessionRequestDto requestDto) {
+    public ResponseEntity<MessageResponseDto> updateSession(AdminUpdateSessionRequestDto requestDto) {
+        String courseId = requestDto.getCourseId();
+        String sessionId = requestDto.getSessionId();
 
+        Session existingSession = sessionsTable.getItem(r -> r.key(k -> k
+                .partitionValue(courseId)
+                .sortValue(sessionId)
+        ));
 
-        return null;
+        if (existingSession == null) {
+            throw new NotFoundException("The course or session with the given IDs does not exist.");
+        }
+
+        Session updatedSession = existingSession.toBuilder()
+                .sessionTitle(requestDto.getSessionTitle())
+                .build();
+
+        UpdateItemEnhancedRequest<Session> enhancedRequest = UpdateItemEnhancedRequest.builder(Session.class)
+                .item(updatedSession)
+                .conditionExpression(Expression.builder()
+                        .expression("attribute_exists(session_id)")
+                        .build())
+                .build();
+
+        sessionsTable.updateItem(enhancedRequest);
+
+        MessageResponseDto responseDto = MessageResponseDto.builder()
+                .message("Session updated successfully.")
+                .build();
+        return ResponseEntity.ok(responseDto);
     }
 
     public ResponseEntity<AdminCreateContentResponseDto> createContent(AdminCreateContentRequestDto requestDto) {
