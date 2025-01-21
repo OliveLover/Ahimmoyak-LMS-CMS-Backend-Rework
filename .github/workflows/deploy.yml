@@ -24,6 +24,7 @@ jobs:
       # Step 3: application.yml 생성
       - name: Create application.yml
         run: |
+          mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./src/main/resources/application.yml
 
       # Step 4: Gradle 캐시 설정
