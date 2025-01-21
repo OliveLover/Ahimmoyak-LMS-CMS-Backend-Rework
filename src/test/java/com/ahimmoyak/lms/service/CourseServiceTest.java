@@ -298,6 +298,46 @@ class CourseServiceTest {
     }
 
     @Test
+    @DisplayName("차시(차시 제목)를 수정하면 DynamoDb에서 수정된 데이터가 반영된다.")
+    void updateSession_shouldUpdateSessionData() throws Exception {
+        // given
+        courseId = "course_" + UUID.randomUUID();
+        sessionId = "session_" + UUID.randomUUID();
+
+        Session existingSession = Session.builder()
+                .courseId(courseId)
+                .sessionId(sessionId)
+                .sessionTitle("Original Session Title")
+                .build();
+        sessionsTable.putItem(existingSession);
+
+        AdminUpdateSessionRequestDto requestDto = AdminUpdateSessionRequestDto.builder()
+                .courseId(courseId)
+                .sessionId(sessionId)
+                .sessionTitle("Updated Session Title")
+                .build();
+        String jsonRequest = objectMapper.writeValueAsString(requestDto);
+
+        // when
+        mockMvc.perform(put("/api/v1/admin/courses/sessions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Session updated successfully."));
+
+        // then
+        Session updatedSession = sessionsTable.getItem(Key.builder()
+                .partitionValue(courseId)
+                .sortValue(sessionId)
+                .build());
+
+        assertNotNull(updatedSession, "Updated session should exist in DynamoDB");
+        assertEquals("Updated Session Title", updatedSession.getSessionTitle(), "Session title should be updated");
+        assertEquals(courseId, updatedSession.getCourseId(), "Course ID should remain unchanged");
+        assertEquals(sessionId, updatedSession.getSessionId(), "Session ID should remain unchanged");
+    }
+
+    @Test
     @DisplayName("Content 생성하면 DynamoDb로 저장하고 200 OK로 응답한다.")
     void createContent_shouldReturnSuccessMessage() throws Exception {
         // given
