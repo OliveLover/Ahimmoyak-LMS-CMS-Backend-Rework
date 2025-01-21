@@ -24,7 +24,7 @@ jobs:
       # Step 3: Create application.yml from Secrets
       - name: Create application.yml from Secrets
         run: |
-          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./src/main/resources/application.yaml
 
       # Step 4: Docker 이미지 빌드
       - name: Build Docker image
