@@ -1,5 +1,6 @@
 package com.ahimmoyak.lms.entity;
 
+import com.ahimmoyak.lms.dto.course.ContentType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -11,18 +12,21 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 @Setter
-@Builder(toBuilder = true)
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamoDbBean
-public class Session {
+public class Content {
 
-    public static final TableSchema<Session> SESSIONS_TABLE_SCHEMA = TableSchema.fromClass(Session.class);
+    public static final TableSchema<Content> CONTENTS_TABLE_SCHEMA = TableSchema.fromClass(Content.class);
 
     private String courseId;
+    private String contentId;
     private String sessionId;
-    private String sessionTitle;
-    private int sessionIndex;
+    private String contentTitle;
+    private ContentType contentType;
+    private int contentIndex;
+    private String videoPath;
 
     @DynamoDbPartitionKey
     @DynamoDbAttribute("course_id")
@@ -31,19 +35,34 @@ public class Session {
     }
 
     @DynamoDbSortKey
+    @DynamoDbAttribute("content_id")
+    public String getContentId() {
+        return contentId;
+    }
+
     @DynamoDbAttribute("session_id")
     public String getSessionId() {
         return sessionId;
     }
 
-    @DynamoDbAttribute("session_title")
-    public String getSessionTitle() {
-        return sessionTitle;
+    @DynamoDbAttribute("content_title")
+    public String getContentTitle() {
+        return contentTitle;
     }
 
-    @DynamoDbAttribute("session_index")
-    public int getSessionIndex() {
-        return sessionIndex;
+    @DynamoDbAttribute("content_type")
+    public ContentType getContentType() {
+        return contentType;
+    }
+
+    @DynamoDbAttribute("content_index")
+    public int getContentIndex() {
+        return contentIndex;
+    }
+
+    @DynamoDbAttribute("video_path")
+    public String getVideoPath() {
+        return videoPath;
     }
 
 }

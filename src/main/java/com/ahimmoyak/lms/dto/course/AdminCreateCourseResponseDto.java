@@ -1,4 +1,4 @@
-package com.ahimmoyak.lms.dto;
+package com.ahimmoyak.lms.dto.course;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MessageResponseDto {
+public class AdminCreateCourseResponseDto {
 
-    private String message;
+    private String courseId;
 
 }
