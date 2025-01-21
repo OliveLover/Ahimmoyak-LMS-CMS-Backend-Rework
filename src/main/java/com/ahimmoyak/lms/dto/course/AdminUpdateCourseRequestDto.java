@@ -35,6 +35,5 @@ public class AdminUpdateCourseRequestDto {
 
     private FundingType fundingType;
     private List<CardType> cardType;
-    private LocalDate modifiedDate;
 
 }

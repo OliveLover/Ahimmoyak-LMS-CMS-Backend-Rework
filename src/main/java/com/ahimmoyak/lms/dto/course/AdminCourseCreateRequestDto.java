@@ -35,7 +35,5 @@ public class AdminCourseCreateRequestDto {
 
     private FundingType fundingType;
     private List<CardType> cardType;
-    private LocalDate createdDate;
-    private LocalDate modifiedDate;
 
 }

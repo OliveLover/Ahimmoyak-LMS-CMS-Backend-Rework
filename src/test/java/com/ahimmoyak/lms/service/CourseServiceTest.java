@@ -132,8 +132,6 @@ class CourseServiceTest {
                 .setDuration(30)
                 .fundingType(REFUNDABLE)
                 .cardType(List.of(NATIONAL_EMPLOYMENT_SUPPORT_CARD, CORPORATE_TRAINING_SUPPORT_CARD))
-                .createdDate(LocalDate.now())
-                .modifiedDate(LocalDate.now())
                 .build();
 
         String jsonRequest = objectMapper.writeValueAsString(requestDto);
@@ -183,8 +181,6 @@ class CourseServiceTest {
                 .setDuration(-1)
                 .fundingType(REFUNDABLE)
                 .cardType(List.of(NATIONAL_EMPLOYMENT_SUPPORT_CARD, CORPORATE_TRAINING_SUPPORT_CARD))
-                .createdDate(LocalDate.now())
-                .modifiedDate(LocalDate.now())
                 .build();
 
         String jsonRequest = objectMapper.writeValueAsString(requestDto);
