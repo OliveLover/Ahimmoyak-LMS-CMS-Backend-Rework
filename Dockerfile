@@ -1,5 +1,5 @@
 # Stage 1: builder
-From openjdk:21-jdk-slim AS builder
+FROM openjdk:21-jdk-slim AS builder
 
 RUN apt-get update && apt-get install -y dos2unix findutils
 
@@ -10,7 +10,6 @@ COPY build.gradle .
 COPY settings.gradle .
 COPY src src
 
-RUN ls -l src/main/resources
 COPY src/main/resources/application.yaml /app/application.yaml
 
 RUN chmod +x ./gradlew
