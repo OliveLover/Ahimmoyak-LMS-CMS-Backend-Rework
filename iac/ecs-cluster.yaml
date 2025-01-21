@@ -19,6 +19,15 @@ Resources:
       MapPublicIpOnLaunch: true
       AvailabilityZone: !Select [0, !GetAZs '']
 
+  # Subnet 2 (Public Subnet)
+  Subnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.2.0/24
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+
   # Internet Gateway for Public Subnet Access
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -52,6 +61,14 @@ Resources:
       SubnetId: !Ref Subnet1
       RouteTableId: !Ref PublicRouteTable
 
+  # Associate Route Table with Subnet 2
+  Subnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref Subnet2
+      RouteTableId: !Ref PublicRouteTable
+
+  # Create IAM role for ECS tasks
   ExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -78,6 +95,7 @@ Resources:
                   - logs:PutLogEvents
                 Resource: "*"
 
+  # Create a security group for the ECS service
   ECSServiceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -89,39 +107,49 @@ Resources:
           ToPort: 8080
           CidrIp: 0.0.0.0/0
 
-  # ECS Cluster Only
+  # ECS Cluster
   ECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: ahimmoyak-ecs-cluster
 
-  # Load Balancer 생성
+  # Create ALB
   ApplicationLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Name: ahimmoyak-alb
       Subnets:
         - !Ref Subnet1
+        - !Ref Subnet2
       SecurityGroups:
         - !Ref ECSServiceSecurityGroup
       Scheme: internet-facing
-      LoadBalancerAttributes:
-        - Key: idle_timeout.timeout_seconds
-          Value: '60'
       Type: application
 
-  # 로드밸런서 리스너 생성
+  # Create ALB Target Group
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 8080
+      Protocol: HTTP
+      VpcId: !Ref VPC
+      HealthCheckPath: /actuator/health
+      HealthCheckPort: "8080"
+      HealthCheckProtocol: HTTP
+      TargetType: ip
+      Matcher:
+        HttpCode: "200"
+
+  # Create ALB Listener
   ALBListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
-      DefaultActions:
-        - Type: fixed-response
-          FixedResponseConfig:
-            StatusCode: 200
-            MessageBody: 'OK'
       LoadBalancerArn: !Ref ApplicationLoadBalancer
-      Port: 80
+      Port: "80"
       Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
 
   # ECS Task Definition (Fargate)
   ECSTaskDefinition:
@@ -144,7 +172,10 @@ Resources:
   # ECS Service (Fargate)
   ECSService:
     Type: AWS::ECS::Service
-    DependsOn: ECSTaskDefinition
+    DependsOn:
+      - ApplicationLoadBalancer
+      - ECSTaskDefinition
+      - ALBListener
     Properties:
       Cluster: !Ref ECSCluster
       TaskDefinition: !Ref ECSTaskDefinition
@@ -155,24 +186,11 @@ Resources:
         AwsvpcConfiguration:
           Subnets:
             - !Ref Subnet1
-          AssignPublicIp: ENABLED
+            - !Ref Subnet2
           SecurityGroups:
             - !Ref ECSServiceSecurityGroup
+          AssignPublicIp: ENABLED
       LoadBalancers:
         - TargetGroupArn: !Ref TargetGroup
           ContainerName: ahimmoyak-container
           ContainerPort: 8080
-
-  # ALB 타겟 그룹 생성
-  TargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Port: 8080
-      Protocol: HTTP
-      VpcId: !Ref VPC
-      HealthCheckIntervalSeconds: 30
-      HealthCheckPath: /
-      HealthCheckPort: 8080
-      HealthCheckProtocol: HTTP
-      Matcher:
-        HttpCode: '200'
