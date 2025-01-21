@@ -21,33 +21,12 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      # Step 3: application.yml 생성
-      - name: Create application.yml
-        run: |
-          mkdir -p ./src/main/resources
-          echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./src/main/resources/application.yml
-
-      # Step 4: Gradle 캐시 설정
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      # Step 5: Test and Build with Gradle
-      - name: Test and Build with Gradle
-        run: |
-          chmod +x ./gradlew
-          ./gradlew clean build
-
-      # Step 6: Docker 이미지 빌드
+      # Step 3: Docker 이미지 빌드
       - name: Build Docker image
         run: |
           docker build -t ahimmoyak/lms-deploy-be .
 
-      # Step 7: AWS CLI 설정 (AWS 자격 증명 설정)
+      # Step 4: AWS CLI 설정 (AWS 자격 증명 설정)
       - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -55,17 +34,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 8: 도커 이미지 태그
+      # Step 5: 도커 이미지 태그
       - name: Tag Docker image
         run: |
           docker tag ahimmoyak/lms-deploy-be:latest ${{ secrets.AWS_ECR_URI }}:latest
 
-      # Step 9: ECR에 로그인
+      # Step 6: ECR에 로그인
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Step 10: Docker 이미지 ECR에 푸시
+      # Step 7: Docker 이미지 ECR에 푸시
       - name: Push Docker image to ECR
         run: |
           docker push ${{ secrets.AWS_ECR_URI }}:latest
