@@ -118,7 +118,7 @@ class CourseServiceTest {
         // given
         courseId = "coures_" + UUID.randomUUID();
 
-        AdminCourseCreateRequestDto requestDto = AdminCourseCreateRequestDto.builder()
+        AdminCreateCourseRequestDto requestDto = AdminCreateCourseRequestDto.builder()
                 .courseId(courseId)
                 .courseTitle("Course Title")
                 .courseIntroduce("Course Introduction")
@@ -168,7 +168,7 @@ class CourseServiceTest {
     @DisplayName("setDuration이 음수일 경우 400 Bad Request로 응답한다.")
     void createCourse_shouldReturnBadRequest_whenDurationIsNegative() throws Exception {
         // given
-        AdminCourseCreateRequestDto requestDto = AdminCourseCreateRequestDto.builder()
+        AdminCreateCourseRequestDto requestDto = AdminCreateCourseRequestDto.builder()
                 .courseTitle("Course Title")
                 .courseIntroduce("Course Introduction")
                 .status(ACTIVE)
@@ -271,7 +271,7 @@ class CourseServiceTest {
         String sessionTitle = "Introduction to Java";
         int sessionIndex = 1;
 
-        AdminSessionCreateRequestDto requestDto = AdminSessionCreateRequestDto.builder()
+        AdminCreateSessionRequestDto requestDto = AdminCreateSessionRequestDto.builder()
                 .courseId(courseId)
                 .sessionId(sessionId)
                 .sessionTitle(sessionTitle)
@@ -305,7 +305,7 @@ class CourseServiceTest {
         sessionId = "session_5678";
         contentId = "content_" + UUID.randomUUID();
 
-        AdminContentCreateRequestDto requestDto = AdminContentCreateRequestDto.builder()
+        AdminCreateContentRequestDto requestDto = AdminCreateContentRequestDto.builder()
                 .courseId(courseId)
                 .sessionId(sessionId)
                 .contentId(contentId)
@@ -340,7 +340,7 @@ class CourseServiceTest {
     @DisplayName("Content Title이 비어있을 경우 400 Bad Request로 응답한다.")
     void createContent_shouldReturnBadRequest_whenContentTitleIsBlank() throws Exception {
         // given
-        AdminContentCreateRequestDto requestDto = AdminContentCreateRequestDto.builder()
+        AdminCreateContentRequestDto requestDto = AdminCreateContentRequestDto.builder()
                 .courseId("course_1234")
                 .sessionId("session_5678")
                 .contentTitle("")

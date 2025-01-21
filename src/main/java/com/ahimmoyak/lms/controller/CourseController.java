@@ -22,7 +22,7 @@ public class CourseController {
 
     @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
     @PostMapping("/api/v1/admin/courses")
-    public ResponseEntity<AdminCourseCreateResponseDto> createCourse(@Valid @RequestBody AdminCourseCreateRequestDto requestDto) {
+    public ResponseEntity<AdminCreateCourseResponseDto> createCourse(@Valid @RequestBody AdminCreateCourseRequestDto requestDto) {
         return courseService.createCourse(requestDto);
     }
 
@@ -30,7 +30,7 @@ public class CourseController {
     @PutMapping("/api/v1/admin/courses")
     public ResponseEntity<MessageResponseDto> updateCourse(@Valid @RequestBody AdminUpdateCourseRequestDto requestDto) {
         return courseService.updateCourse(requestDto);
-}
+    }
 
     @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
     @GetMapping("/api/v1/admin/courses/{courseId}")
@@ -46,13 +46,19 @@ public class CourseController {
 
     @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
     @PostMapping("/api/v1/admin/courses/sessions")
-    public ResponseEntity<AdminSessionCreateResponseDto> createSession(@Valid @RequestBody AdminSessionCreateRequestDto requestDto) {
+    public ResponseEntity<AdminCreateSessionResponseDto> createSession(@Valid @RequestBody AdminCreateSessionRequestDto requestDto) {
         return courseService.createSession(requestDto);
     }
 
     @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
+    @PutMapping("/api/v1/admin/courses/sessions")
+    public ResponseEntity<AdminUpdateSessionResponseDto> updateSession(@Valid @RequestBody AdminUpdateSessionRequestDto requestDto) {
+        return courseService.updateSession(requestDto);
+    }
+
+    @CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
     @PostMapping("/api/v1/admin/courses/sessions/contents")
-    public ResponseEntity<AdminContentCreateResponseDto> createContent(@Valid @RequestBody AdminContentCreateRequestDto requestDto) {
+    public ResponseEntity<AdminCreateContentResponseDto> createContent(@Valid @RequestBody AdminCreateContentRequestDto requestDto) {
         return courseService.createContent(requestDto);
     }
 

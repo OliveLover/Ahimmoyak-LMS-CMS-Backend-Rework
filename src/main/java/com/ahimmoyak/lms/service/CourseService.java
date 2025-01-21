@@ -78,7 +78,7 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
-    public ResponseEntity<AdminCourseCreateResponseDto> createCourse(AdminCourseCreateRequestDto requestDto) {
+    public ResponseEntity<AdminCreateCourseResponseDto> createCourse(AdminCreateCourseRequestDto requestDto) {
         String courseId = requestDto.getCourseId();
 
         if (requestDto.getCourseId() == null) {
@@ -105,7 +105,7 @@ public class CourseService {
 
         coursesTable.putItem(course);
 
-        AdminCourseCreateResponseDto responseDto = AdminCourseCreateResponseDto.builder()
+        AdminCreateCourseResponseDto responseDto = AdminCreateCourseResponseDto.builder()
                 .courseId(courseId)
                 .build();
 
@@ -209,7 +209,7 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
-    public ResponseEntity<AdminSessionCreateResponseDto> createSession(AdminSessionCreateRequestDto requestDto) {
+    public ResponseEntity<AdminCreateSessionResponseDto> createSession(AdminCreateSessionRequestDto requestDto) {
         String sessionId = requestDto.getSessionId();
 
         if (requestDto.getSessionId() == null) {
@@ -225,7 +225,7 @@ public class CourseService {
 
         sessionsTable.putItem(session);
 
-        AdminSessionCreateResponseDto responseDto = AdminSessionCreateResponseDto.builder()
+        AdminCreateSessionResponseDto responseDto = AdminCreateSessionResponseDto.builder()
                 .sessionId(sessionId)
                 .build();
 
@@ -233,7 +233,13 @@ public class CourseService {
 
     }
 
-    public ResponseEntity<AdminContentCreateResponseDto> createContent(AdminContentCreateRequestDto requestDto) {
+    public ResponseEntity<AdminUpdateSessionResponseDto> updateSession(AdminUpdateSessionRequestDto requestDto) {
+
+
+        return null;
+    }
+
+    public ResponseEntity<AdminCreateContentResponseDto> createContent(AdminCreateContentRequestDto requestDto) {
         String contentId = requestDto.getContentId();
 
         if (requestDto.getContentId() == null) {
@@ -251,7 +257,7 @@ public class CourseService {
 
         contentsTable.putItem(content);
 
-        AdminContentCreateResponseDto responseDto = AdminContentCreateResponseDto.builder()
+        AdminCreateContentResponseDto responseDto = AdminCreateContentResponseDto.builder()
                 .contentId(contentId)
                 .build();
 
@@ -359,5 +365,4 @@ public class CourseService {
                 .explanation(quiz.getExplanation())
                 .build();
     }
-
 }

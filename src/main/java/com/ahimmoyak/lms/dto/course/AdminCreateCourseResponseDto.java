@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminContentCreateResponseDto {
+public class AdminCreateCourseResponseDto {
 
-    private String contentId;
+    private String courseId;
 
 }
