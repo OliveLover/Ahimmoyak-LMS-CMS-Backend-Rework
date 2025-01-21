@@ -22,8 +22,9 @@ jobs:
           java-version: 21
 
       # Step 3: Create application.yml from Secrets
-      - name: Create application.yml from Secrets
+      - name: Create application.yaml from Secrets
         run: |
+          mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./src/main/resources/application.yaml
 
       # Step 4: Docker 이미지 빌드
