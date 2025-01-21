@@ -10,6 +10,7 @@ COPY build.gradle .
 COPY settings.gradle .
 COPY src src
 
+RUN ls -l src/main/resources
 COPY src/main/resources/application.yaml /app/application.yaml
 
 RUN chmod +x ./gradlew
