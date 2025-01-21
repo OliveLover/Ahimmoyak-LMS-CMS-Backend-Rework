@@ -10,9 +10,7 @@ COPY build.gradle .
 COPY settings.gradle .
 COPY src src
 
-RUN mkdir -p /app/src/main/resources
-
-COPY src/main/resources/application.yml /app/application.yml
+COPY src/main/resources/application.yaml /app/application.yaml
 
 RUN chmod +x ./gradlew
 RUN dos2unix ./gradlew
