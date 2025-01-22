@@ -147,6 +147,10 @@ Resources:
       TargetType: ip
       Matcher:
         HttpCode: "200"
+      HealthCheckIntervalSeconds: 60
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 3
 
   # Create HTTP Listener (Redirect to HTTPS)
   HTTPListener:
@@ -204,8 +208,8 @@ Resources:
       LaunchType: FARGATE
       DesiredCount: 1
       DeploymentConfiguration:
-        MaximumPercent: 200
-        MinimumHealthyPercent: 50
+        MaximumPercent: 300
+        MinimumHealthyPercent: 100
       ServiceName: ahimmoyak-ecs-service
       NetworkConfiguration:
         AwsvpcConfiguration:
@@ -219,3 +223,14 @@ Resources:
         - TargetGroupArn: !Ref TargetGroup
           ContainerName: ahimmoyak-container
           ContainerPort: 8080
+
+  # Route 53 Record Set for ALB
+  ALBRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: "ahimmoyak.shop."
+      Name: "ahimmoyak.shop."
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+        HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
