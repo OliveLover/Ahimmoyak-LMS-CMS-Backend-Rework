@@ -10,12 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(
-        origins = {"http://localhost:5173", "https://www.ahimmoyak.shop", "https://ahimmoyak.shop"},
-        allowedHeaders = {"*"},
-        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.PATCH, RequestMethod.DELETE},
-        allowCredentials = "true"
-)
+@CrossOrigin(origins = {"http://localhost:5173", "https://www.ahimmoyak.shop"})
 public class CourseController {
 
     private final CourseService courseService;
