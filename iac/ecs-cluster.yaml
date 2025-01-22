@@ -99,7 +99,7 @@ Resources:
   ECSServiceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: "Allow inbound traffic on port 8080 (Spring)"
+      GroupDescription: "Allow inbound traffic on ports 8080 (Spring), 80 (HTTP), and 443 (HTTPS) for ECS service"
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -109,6 +109,10 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
           CidrIp: 0.0.0.0/0
 
   # ECS Cluster
@@ -144,13 +148,30 @@ Resources:
       Matcher:
         HttpCode: "200"
 
-  # Create ALB Listener
-  ALBListener:
+  # Create HTTP Listener (Redirect to HTTPS)
+  HTTPListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       LoadBalancerArn: !Ref ApplicationLoadBalancer
       Port: "80"
       Protocol: HTTP
+      DefaultActions:
+        - Type: redirect
+          RedirectConfig:
+            Protocol: HTTPS
+            Port: "443"
+            StatusCode: HTTP_301
+
+  # Create ALB Listener
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: "443"
+      Protocol: HTTPS
+      SslPolicy: ELBSecurityPolicy-2016-08
+      Certificates:
+        - CertificateArn: arn:aws:acm:ap-northeast-2:490004636137:certificate/dff5194a-8de6-4725-9f34-224d1cfc3adc
       DefaultActions:
         - Type: forward
           TargetGroupArn: !Ref TargetGroup

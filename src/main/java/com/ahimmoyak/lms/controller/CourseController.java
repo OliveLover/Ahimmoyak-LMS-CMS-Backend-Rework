@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:5173", "https://d160mfz1jp4ygp.cloudfront.net"})
+@CrossOrigin(origins = {"http://localhost:5173", "https://www.ahimmoyak.shop"})
 public class CourseController {
 
     private final CourseService courseService;
