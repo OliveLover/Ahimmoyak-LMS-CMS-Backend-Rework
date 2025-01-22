@@ -203,6 +203,9 @@ Resources:
       TaskDefinition: !Ref ECSTaskDefinition
       LaunchType: FARGATE
       DesiredCount: 1
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
       ServiceName: ahimmoyak-ecs-service
       NetworkConfiguration:
         AwsvpcConfiguration:
