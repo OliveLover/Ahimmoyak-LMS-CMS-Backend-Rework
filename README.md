@@ -31,7 +31,7 @@
 
 > 🔗 [Backend original repository 링크](https://github.com/AhHimMoYak/lms_be)
 
-> ⭐ [Frontend rework repository 링크](https://github.com/AhHimMoYak/lms_be)
+> ⭐ [Frontend rework repository 링크](https://github.com/OliveLover/Ahimmoyak-LMS-CMS-Frontend-Rework?tab=readme-ov-file)
 
 <br />
 
