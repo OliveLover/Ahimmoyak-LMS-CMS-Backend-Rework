@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import static com.ahimmoyak.lms.dto.course.CardType.CORPORATE_TRAINING_SUPPORT_CARD;
 import static com.ahimmoyak.lms.dto.course.CardType.NATIONAL_EMPLOYMENT_SUPPORT_CARD;
+import static com.ahimmoyak.lms.dto.course.ContentType.QUIZ;
 import static com.ahimmoyak.lms.dto.course.ContentType.VIDEO;
 import static com.ahimmoyak.lms.dto.course.CourseGrade.A;
 import static com.ahimmoyak.lms.dto.course.CourseStatus.ACTIVE;
@@ -395,6 +396,50 @@ class CourseServiceTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("훈련 콘텐츠를 수정하면 DynamoDb에서 수정된 데이터가 반영된다.")
+    void updateContent_shouldUpdateContentData() throws Exception {
+        // given
+        courseId = "course_" + UUID.randomUUID();
+        contentId = "content_" + UUID.randomUUID();
+
+        Content existingContent = Content.builder()
+                .courseId(courseId)
+                .contentId(contentId)
+                .contentTitle("Original Content Title")
+                .contentType(VIDEO)
+                .build();
+        contentsTable.putItem(existingContent);
+
+        AdminUpdateContentRequestDto requestDto = AdminUpdateContentRequestDto.builder()
+                .courseId(courseId)
+                .contentId(contentId)
+                .contentTitle("Updated Content Title")
+                .contentType(QUIZ)
+                .build();
+
+        String jsonRequest = objectMapper.writeValueAsString(requestDto);
+
+        // when
+        mockMvc.perform(put("/api/v1/admin/courses/sessions/contents")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Session updated successfully."));
+
+        // then
+        Content updatedContent = contentsTable.getItem(Key.builder()
+                .partitionValue(courseId)
+                .sortValue(contentId)
+                .build());
+
+        assertNotNull(updatedContent, "Updated content should exist in DynamoDB");
+        assertEquals("Updated Content Title", updatedContent.getContentTitle(), "Content title should be updated");
+        assertEquals(QUIZ, updatedContent.getContentType(), "Content type should remain unchanged");
+        assertEquals(courseId, updatedContent.getCourseId(), "Course ID should remain unchanged");
+        assertEquals(contentId, updatedContent.getContentId(), "Content ID should remain unchanged");
     }
 
     @Test

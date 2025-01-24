@@ -55,6 +55,11 @@ public class CourseController {
         return courseService.createContent(requestDto);
     }
 
+    @PutMapping("/api/v1/admin/courses/sessions/contents")
+    public ResponseEntity<MessageResponseDto> updateContent(@Valid @RequestBody AdminUpdateContentRequestDto requestDto) {
+        return courseService.updateContent(requestDto);
+    }
+
     @PutMapping("/api/v1/admin/courses/sessions/contents/quizzes")
     public ResponseEntity<AdminCreateQuizResponseDto> createQuiz(@Valid @RequestBody AdminCreateQuizRequestDto requestDto) {
         return courseService.createQuiz(requestDto);
