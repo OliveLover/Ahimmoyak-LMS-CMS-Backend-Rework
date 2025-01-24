@@ -399,7 +399,7 @@ class CourseServiceTest {
     }
 
     @Test
-    @DisplayName("훈련 콘텐츠를 수정하면 DynamoDb에서 수정된 데이터가 반영된다.")
+    @DisplayName("훈련 콘텐츠의 contentTitle과 contentType을 수정하면 DynamoDb에서 수정된 데이터가 반영된다.")
     void updateContent_shouldUpdateContentData() throws Exception {
         // given
         courseId = "course_" + UUID.randomUUID();
