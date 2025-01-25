@@ -32,6 +32,7 @@ dependencies {
 	// AWS SDK
 	implementation platform('software.amazon.awssdk:bom:2.29.50')
 	implementation 'software.amazon.awssdk:dynamodb-enhanced'
+	implementation 'software.amazon.awssdk:s3'
 
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'

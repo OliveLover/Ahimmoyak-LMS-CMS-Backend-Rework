@@ -20,7 +20,7 @@ public class AdminManagedCourseDto {
     private LocalDate activeEndDate;
     private String instructor;
     private CourseGrade grade;
-    private NCSClassification ncsClassification;
+    private NcsClassification ncsClassification;
     private int setDuration;
     private int remainingDuration;
     private FundingType fundingType;

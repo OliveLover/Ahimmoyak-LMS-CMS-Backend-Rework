@@ -242,7 +242,6 @@ public class CourseService {
                 .build();
 
         return ResponseEntity.ok(responseDto);
-
     }
 
     public ResponseEntity<MessageResponseDto> updateSession(AdminUpdateSessionRequestDto requestDto) {
@@ -274,6 +273,7 @@ public class CourseService {
         MessageResponseDto responseDto = MessageResponseDto.builder()
                 .message("Session updated successfully.")
                 .build();
+
         return ResponseEntity.ok(responseDto);
     }
 
@@ -297,6 +297,40 @@ public class CourseService {
 
         AdminCreateContentResponseDto responseDto = AdminCreateContentResponseDto.builder()
                 .contentId(contentId)
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    public ResponseEntity<MessageResponseDto> updateContent(AdminUpdateContentRequestDto requestDto) {
+        String courseId = requestDto.getCourseId();
+        String contentId = requestDto.getContentId();
+
+        Content existingContent = contentsTable.getItem(r -> r.key(k -> k
+                .partitionValue(courseId)
+                .sortValue(contentId)
+        ));
+
+        if (existingContent == null) {
+            throw new NotFoundException("The course or content with the given IDs does not exist.");
+        }
+
+        Content updatedContent = existingContent.toBuilder()
+                .contentTitle(requestDto.getContentTitle())
+                .contentType(requestDto.getContentType())
+                .build();
+
+        UpdateItemEnhancedRequest<Content> enhancedRequest = UpdateItemEnhancedRequest.builder(Content.class)
+                .item(updatedContent)
+                .conditionExpression(Expression.builder()
+                        .expression("attribute_exists(content_id)")
+                        .build())
+                .build();
+
+        contentsTable.updateItem(enhancedRequest);
+
+        MessageResponseDto responseDto = MessageResponseDto.builder()
+                .message("Session updated successfully.")
                 .build();
 
         return ResponseEntity.ok(responseDto);
@@ -403,4 +437,5 @@ public class CourseService {
                 .explanation(quiz.getExplanation())
                 .build();
     }
+
 }
