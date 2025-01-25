@@ -28,7 +28,7 @@ public class AdminCreateCourseRequestDto {
     private String instructor;
     private String thumbnailPath;
     private CourseGrade grade;
-    private NCSClassification ncsClassification;
+    private NcsClassification ncsClassification;
 
     @Min(value = 0, message = "The field 'setDuration' must be at least 0.")
     private int setDuration;

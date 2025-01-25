@@ -30,7 +30,7 @@ import static com.ahimmoyak.lms.dto.course.ContentType.VIDEO;
 import static com.ahimmoyak.lms.dto.course.CourseGrade.A;
 import static com.ahimmoyak.lms.dto.course.CourseStatus.ACTIVE;
 import static com.ahimmoyak.lms.dto.course.FundingType.REFUNDABLE;
-import static com.ahimmoyak.lms.dto.course.NCSClassification.BUSINESS_MANAGEMENT;
+import static com.ahimmoyak.lms.dto.course.NcsClassification.BUSINESS_MANAGEMENT;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

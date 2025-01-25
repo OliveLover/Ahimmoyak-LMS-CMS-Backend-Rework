@@ -3,7 +3,7 @@ package com.ahimmoyak.lms.dto.course;
 import lombok.Getter;
 
 @Getter
-public enum NCSClassification {
+public enum NcsClassification {
     UNDEFINED("00", "미정"),
     BUSINESS_MANAGEMENT("01", "사업관리"),
     MANAGEMENT_ACCOUNTING_OFFICE_WORK("02", "경영·회계·사무"),
@@ -33,7 +33,7 @@ public enum NCSClassification {
     private final String codeNum;
     private final String displayName;
 
-    NCSClassification(String codeNum, String displayName) {
+    NcsClassification(String codeNum, String displayName) {
         this.codeNum = codeNum;
         this.displayName = displayName;
     }

@@ -31,7 +31,7 @@ public class Course {
     private String instructor;
     private String thumbnailPath;
     private CourseGrade grade;
-    private NCSClassification ncsClassification;
+    private NcsClassification ncsClassification;
     private int setDuration;
     private FundingType fundingType;
     private List<CardType> cardType;
@@ -85,7 +85,7 @@ public class Course {
     }
 
     @DynamoDbAttribute("ncs_classification")
-    public NCSClassification getNcsClassification() {
+    public NcsClassification getNcsClassification() {
         return ncsClassification;
     }
 

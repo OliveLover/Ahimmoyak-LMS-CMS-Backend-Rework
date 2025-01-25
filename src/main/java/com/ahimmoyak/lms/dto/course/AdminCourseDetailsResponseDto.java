@@ -23,7 +23,7 @@ public class AdminCourseDetailsResponseDto {
     private String instructor;
     private String thumbnailPath;
     private CourseGrade grade;
-    private NCSClassification ncsClassification;
+    private NcsClassification ncsClassification;
     private int setDuration;
     private FundingType fundingType;
     private List<CardType> cardType;
