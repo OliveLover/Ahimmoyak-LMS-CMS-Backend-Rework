@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughputExceededException;
@@ -155,8 +156,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST.value())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(exceptionDto);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionDto);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -175,8 +175,21 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST.value())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(exceptionDto);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionDto);
+    }
+
+    @ExceptionHandler(SdkException.class)
+    public ResponseEntity<ExceptionDto> handleSdkException(SdkException ex) {
+        ExceptionDto exceptionDto = ExceptionDto.builder()
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message(List.of(ex.getMessage()))
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .build();
+
+        log.error("AWS S3 SDK operation failed: {}", ex.getMessage(), ex);
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exceptionDto);
     }
 
 }
