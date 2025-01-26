@@ -1,30 +1,33 @@
 package com.ahimmoyak.lms.controller;
 
 import com.ahimmoyak.lms.dto.MessageResponseDto;
-import com.ahimmoyak.lms.dto.upload.InitiateMultipartUploadRequestDto;
-import com.ahimmoyak.lms.dto.upload.InitiateMultipartUploadResponseDto;
+import com.ahimmoyak.lms.dto.upload.*;
 import com.ahimmoyak.lms.service.S3MultipartUploadService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import software.amazon.awssdk.services.s3.model.CompletedPart;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = {"http://localhost:5173", "https://www.ahimmoyak.shop"})
 public class S3MultipartUploadController {
 
     private final S3MultipartUploadService s3MultipartUploadService;
 
     @PostMapping("/api/v1/s3/initiate")
-    public ResponseEntity<InitiateMultipartUploadResponseDto> initiateMultipartUpload(@RequestBody InitiateMultipartUploadRequestDto requestDto) {
+    public ResponseEntity<InitiateMultipartUploadResponseDto> initiateMultipartUpload(@Valid @RequestBody InitiateMultipartUploadRequestDto requestDto) {
         return s3MultipartUploadService.initiateMultipartUpload(requestDto);
     }
 
+    @PostMapping("/api/v1/s3/presigned-url")
+    public ResponseEntity<PresignedUrlResponseDto> createPresignedUrls(@Valid @RequestBody PresignedUrlRequestDto requestDto) {
+        return s3MultipartUploadService.createPresignedUrls(requestDto);
+    }
+
     @PutMapping("/api/v1/s3/complete")
-    public ResponseEntity<MessageResponseDto> completeMultipartUpload(@RequestParam String fileName, @RequestParam String uploadId, @RequestBody List<CompletedPart> completedParts) {
-        return s3MultipartUploadService.completeMultipartUpload(fileName, uploadId, completedParts);
+    public ResponseEntity<MessageResponseDto> completeMultipartUpload(@Valid @RequestBody CompleteMultipartUploadRequestDto requestDto) {
+        return s3MultipartUploadService.completeMultipartUpload(requestDto);
     }
 
     @DeleteMapping("/api/v1/s3/abort")
