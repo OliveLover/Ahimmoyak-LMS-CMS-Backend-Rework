@@ -1,6 +1,7 @@
 package com.ahimmoyak.lms.entity;
 
 import com.ahimmoyak.lms.dto.course.ContentType;
+import com.ahimmoyak.lms.dto.upload.FileType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -27,6 +28,11 @@ public class Content {
     private ContentType contentType;
     private int contentIndex;
     private String videoPath;
+    private String fileId;
+    private FileType fileType;
+    private int videoDuration;
+    private long fileSize;
+    private String fileName;
 
     @DynamoDbPartitionKey
     @DynamoDbAttribute("course_id")
@@ -63,6 +69,31 @@ public class Content {
     @DynamoDbAttribute("video_path")
     public String getVideoPath() {
         return videoPath;
+    }
+
+    @DynamoDbAttribute("file_id")
+    public String getFileId() {
+        return fileId;
+    }
+
+    @DynamoDbAttribute("file_type")
+    public FileType getFileType() {
+        return fileType;
+    }
+
+    @DynamoDbAttribute("video_duration")
+    public int getVideoDuration() {
+        return videoDuration;
+    }
+
+    @DynamoDbAttribute("file_size")
+    public long getFileSize() {
+        return fileSize;
+    }
+
+    @DynamoDbAttribute("file_name")
+    public String getFileName() {
+        return fileName;
     }
 
 }

@@ -2,12 +2,18 @@ package com.ahimmoyak.lms.service;
 
 import com.ahimmoyak.lms.dto.MessageResponseDto;
 import com.ahimmoyak.lms.dto.upload.*;
+import com.ahimmoyak.lms.entity.Content;
+import com.ahimmoyak.lms.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.awscore.AwsRequestOverrideConfiguration;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Expression;
+import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -18,20 +24,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.ahimmoyak.lms.entity.Content.CONTENTS_TABLE_SCHEMA;
+
 @Slf4j
 @Service
 public class S3MultipartUploadService {
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
+    private final DynamoDbTable<Content> contentsTable;
 
     @Value("${aws.bucketName}")
     private String bucketName;
 
     @Autowired
-    public S3MultipartUploadService(S3Client s3Client, S3Presigner s3Presigner) {
+    public S3MultipartUploadService(S3Client s3Client, S3Presigner s3Presigner, DynamoDbEnhancedClient enhancedClient) {
         this.s3Client = s3Client;
         this.s3Presigner = s3Presigner;
+        this.contentsTable = enhancedClient.table("contents", CONTENTS_TABLE_SCHEMA);
     }
 
     public ResponseEntity<InitiateMultipartUploadResponseDto> initiateMultipartUpload(InitiateMultipartUploadRequestDto requestDto) {
@@ -94,6 +104,8 @@ public class S3MultipartUploadService {
 
         s3Client.completeMultipartUpload(completeRequest);
 
+        updateContentMetaInfo(requestDto);
+
         MessageResponseDto responseDto = MessageResponseDto.builder()
                 .message("Multipart upload completed successfully.")
                 .build();
@@ -148,6 +160,40 @@ public class S3MultipartUploadService {
                                 .build()
                 )
                 .toList();
+    }
+
+    private void updateContentMetaInfo(CompleteMultipartUploadRequestDto requestDto) {
+        String courseId = requestDto.getCourseId();
+        String contentId = requestDto.getContentId();
+
+        log.info("courseId {}", courseId);
+        log.info("contentId {}", contentId);
+
+        Content existingContent = contentsTable.getItem(r -> r.key(k -> k
+                .partitionValue(courseId)
+                .sortValue(contentId)
+        ));
+
+        if (existingContent == null) {
+            throw new NotFoundException("The course or content with the given IDs does not exist.");
+        }
+
+        Content updatedContent = existingContent.toBuilder()
+                .fileId(requestDto.getFileId())
+                .fileSize(requestDto.getFileSize())
+                .fileName(requestDto.getFileName())
+                .fileType(requestDto.getFileType())
+                .videoDuration(requestDto.getVideoDuration())
+                .build();
+
+        UpdateItemEnhancedRequest<Content> enhancedRequest = UpdateItemEnhancedRequest.builder(Content.class)
+                .item(updatedContent)
+                .conditionExpression(Expression.builder()
+                        .expression("attribute_exists(content_id)")
+                        .build())
+                .build();
+
+        contentsTable.updateItem(enhancedRequest);
     }
 
 }
