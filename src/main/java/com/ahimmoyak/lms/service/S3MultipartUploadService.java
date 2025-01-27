@@ -34,6 +34,9 @@ public class S3MultipartUploadService {
     private final S3Presigner s3Presigner;
     private final DynamoDbTable<Content> contentsTable;
 
+    @Value("${aws.region}")
+    private String awsRegion;
+
     @Value("${aws.bucketName}")
     private String bucketName;
 
@@ -184,6 +187,7 @@ public class S3MultipartUploadService {
                 .fileName(requestDto.getFileName())
                 .fileType(requestDto.getFileType())
                 .videoDuration(requestDto.getVideoDuration())
+                .videoPath(generateS3FileUrl(requestDto.getFileKey()))
                 .build();
 
         UpdateItemEnhancedRequest<Content> enhancedRequest = UpdateItemEnhancedRequest.builder(Content.class)
@@ -194,6 +198,10 @@ public class S3MultipartUploadService {
                 .build();
 
         contentsTable.updateItem(enhancedRequest);
+    }
+
+    private String generateS3FileUrl(String fileKey) {
+        return "https://" + bucketName + ".s3." + awsRegion + ".amazonaws.com/" + fileKey;
     }
 
 }
