@@ -423,6 +423,11 @@ public class CourseService {
                 .contentIndex(content.getContentIndex())
                 .contentTitle(content.getContentTitle())
                 .contentType(content.getContentType())
+                .videoPath(content.getVideoPath())
+                .fileId(content.getFileId())
+                .fileType(content.getFileType())
+                .videoDuration(content.getVideoDuration())
+                .fileSize(content.getFileSize())
                 .quizzes(quizDtos)
                 .build();
     }

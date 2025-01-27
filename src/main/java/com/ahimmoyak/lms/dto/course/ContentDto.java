@@ -1,5 +1,6 @@
 package com.ahimmoyak.lms.dto.course;
 
+import com.ahimmoyak.lms.dto.upload.FileType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,6 +18,11 @@ public class ContentDto {
     private int contentIndex;
     private String contentTitle;
     private ContentType contentType;
+    private String videoPath;
+    private String fileId;
+    private FileType fileType;
+    private int videoDuration;
+    private long fileSize;
     private List<QuizDto> quizzes;
 
 }

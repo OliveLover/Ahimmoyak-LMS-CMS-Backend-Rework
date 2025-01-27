@@ -169,9 +169,6 @@ public class S3MultipartUploadService {
         String courseId = requestDto.getCourseId();
         String contentId = requestDto.getContentId();
 
-        log.info("courseId {}", courseId);
-        log.info("contentId {}", contentId);
-
         Content existingContent = contentsTable.getItem(r -> r.key(k -> k
                 .partitionValue(courseId)
                 .sortValue(contentId)
