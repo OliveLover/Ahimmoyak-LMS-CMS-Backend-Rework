@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PresignedUrlRequestDto {
 
-    @NotNull(message = "The upload ID must be provided.")
+    @NotNull(message = "Upload ID (uploadId) is a required field.")
     private String uploadId;
 
     @NotBlank(message = "File key is required.")

@@ -51,6 +51,7 @@ public class S3MultipartUploadService {
         InitiateMultipartUploadResponseDto responseDto = InitiateMultipartUploadResponseDto.builder()
                 .uploadId(uploadResponse.uploadId())
                 .fileKey(fileKey)
+                .fileId(fileId)
                 .build();
 
         return ResponseEntity.ok(responseDto);

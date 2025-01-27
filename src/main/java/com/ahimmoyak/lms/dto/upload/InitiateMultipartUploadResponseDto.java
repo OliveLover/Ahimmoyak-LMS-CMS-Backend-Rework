@@ -13,5 +13,6 @@ public class InitiateMultipartUploadResponseDto {
 
     private String uploadId;
     private String fileKey;
+    private String fileId;
 
 }
