@@ -7,6 +7,7 @@ import com.ahimmoyak.lms.entity.Course;
 import com.ahimmoyak.lms.entity.Quiz;
 import com.ahimmoyak.lms.entity.Session;
 import com.ahimmoyak.lms.exception.NotFoundException;
+import com.ahimmoyak.lms.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,7 @@ public class CourseService {
         this.coursesTable = enhancedClient.table("courses", COURSES_TABLE_SCHEMA);
         this.sessionsTable = enhancedClient.table("sessions", SESSIONS_TABLE_SCHEMA);
         this.contentsTable = enhancedClient.table("contents", CONTENTS_TABLE_SCHEMA);
-        this.quizzesTable = enhancedClient.table("quiz", QUIZZES_TABLE_SCHEMA);
+        this.quizzesTable = enhancedClient.table("quizzes", QUIZZES_TABLE_SCHEMA);
     }
 
     public ResponseEntity<AdminManagedCoursesResponseDto> getManagedCourses() {
@@ -200,22 +201,26 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
-    public ResponseEntity<AdminCourseSessionsResponseDto> getCourseSessions(String courseId) {
+    public ResponseEntity<AdminCourseSessionInfoResponseDto> getCourseSessionInfo(String courseId, String sessionId) {
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
-                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)
+                        .sortValue(sessionId)))
                 .build();
 
         SdkIterable<Page<Session>> result = sessionsTable.query(queryRequest);
-        List<SessionDto> sessionDtos = result.stream()
+        SessionDto sessionDto = result.stream()
                 .flatMap(page -> page.items().stream())
+                .findFirst()
                 .map(session -> {
                     List<ContentDto> contentDtos = getContentByCourseIdAndSessionId(courseId, session.getSessionId());
                     return mapToSessionDto(session, contentDtos);
                 })
-                .toList();
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Session not found for courseId: " + courseId + ", sessionId: " + sessionId)
+                );
 
-        AdminCourseSessionsResponseDto responseDto = AdminCourseSessionsResponseDto.builder()
-                .sessions(sessionDtos)
+        AdminCourseSessionInfoResponseDto responseDto = AdminCourseSessionInfoResponseDto.builder()
+                .session(sessionDto)
                 .build();
 
         return ResponseEntity.ok(responseDto);

@@ -35,9 +35,9 @@ public class CourseController {
         return courseService.getAdminCourseDetails(courseId);
     }
 
-    @GetMapping("/api/v1/admin/courses/{courseId}/sessions")
-    public ResponseEntity<AdminCourseSessionsResponseDto> getCourseSessions(@PathVariable String courseId) {
-        return courseService.getCourseSessions(courseId);
+    @GetMapping("/api/v1/admin/courses/{courseId}/sessions/{sessionId}/preview")
+    public ResponseEntity<AdminCourseSessionInfoResponseDto> getCourseSessionInfo(@PathVariable String courseId, @PathVariable String sessionId) {
+        return courseService.getCourseSessionInfo(courseId, sessionId);
     }
 
     @PostMapping("/api/v1/admin/courses/sessions")

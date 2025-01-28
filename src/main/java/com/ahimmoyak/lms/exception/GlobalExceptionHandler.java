@@ -192,4 +192,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exceptionDto);
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ExceptionDto> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        ExceptionDto exceptionDto = ExceptionDto.builder()
+                .error(HttpStatus.NOT_FOUND.getReasonPhrase())
+                .message(List.of(ex.getMessage()))
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .build();
+
+        log.error("ResourceNotFoundException occurred: {}", ex.getMessage(), ex);
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionDto);
+    }
+
 }
