@@ -3,6 +3,7 @@ package com.ahimmoyak.lms.service;
 import com.ahimmoyak.lms.dto.MessageResponseDto;
 import com.ahimmoyak.lms.dto.upload.*;
 import com.ahimmoyak.lms.entity.Content;
+import com.ahimmoyak.lms.entity.Course;
 import com.ahimmoyak.lms.exception.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.ahimmoyak.lms.dto.upload.FileType.VIDEO;
 import static com.ahimmoyak.lms.entity.Content.CONTENTS_TABLE_SCHEMA;
+import static com.ahimmoyak.lms.entity.Course.COURSES_TABLE_SCHEMA;
 
 @Slf4j
 @Service
@@ -33,6 +36,7 @@ public class S3MultipartUploadService {
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
     private final DynamoDbTable<Content> contentsTable;
+    private final DynamoDbTable<Course> coursesTable;
 
     @Value("${aws.region}")
     private String awsRegion;
@@ -45,6 +49,7 @@ public class S3MultipartUploadService {
         this.s3Client = s3Client;
         this.s3Presigner = s3Presigner;
         this.contentsTable = enhancedClient.table("contents", CONTENTS_TABLE_SCHEMA);
+        this.coursesTable = enhancedClient.table("courses", COURSES_TABLE_SCHEMA);
     }
 
     public ResponseEntity<InitiateMultipartUploadResponseDto> initiateMultipartUpload(InitiateMultipartUploadRequestDto requestDto) {
@@ -107,7 +112,11 @@ public class S3MultipartUploadService {
 
         s3Client.completeMultipartUpload(completeRequest);
 
-        updateContentMetaInfo(requestDto);
+        if (VIDEO.equals(requestDto.getFileType())) {
+            updateContentMetaInfo(requestDto);
+        } else {
+            updateCourseMetaInfo(requestDto);
+        }
 
         MessageResponseDto responseDto = MessageResponseDto.builder()
                 .message("Multipart upload completed successfully.")
@@ -195,6 +204,34 @@ public class S3MultipartUploadService {
                 .build();
 
         contentsTable.updateItem(enhancedRequest);
+    }
+
+    private void updateCourseMetaInfo(CompleteMultipartUploadRequestDto requestDto) {
+        String courseId = requestDto.getCourseId();
+
+        Course existingCourse = coursesTable.getItem(r -> r.key(k -> k
+                .partitionValue(courseId)
+        ));
+
+        if (existingCourse == null) {
+            throw new NotFoundException("The course with the given IDs does not exist.");
+        }
+
+        Course updatedCourse = existingCourse.toBuilder()
+                .thumbnailId(requestDto.getFileId())
+                .thumbnailPath(generateS3FileUrl(requestDto.getFileKey()))
+                .thumbnailSize(requestDto.getFileSize())
+                .thumbnailName(requestDto.getFileName())
+                .build();
+
+        UpdateItemEnhancedRequest<Course> enhancedRequest = UpdateItemEnhancedRequest.builder(Course.class)
+                .item(updatedCourse)
+                .conditionExpression(Expression.builder()
+                        .expression("attribute_exists(course_id)")
+                        .build())
+                .build();
+
+        coursesTable.updateItem(enhancedRequest);
     }
 
     private String generateS3FileUrl(String fileKey) {

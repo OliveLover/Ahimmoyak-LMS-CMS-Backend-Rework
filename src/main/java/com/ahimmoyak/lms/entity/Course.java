@@ -30,6 +30,9 @@ public class Course {
     private LocalDate activeEndDate;
     private String instructor;
     private String thumbnailPath;
+    private String thumbnailId;
+    private long thumbnailSize;
+    private String thumbnailName;
     private CourseGrade grade;
     private NcsClassification ncsClassification;
     private int setDuration;
@@ -77,6 +80,21 @@ public class Course {
     @DynamoDbAttribute("thumbnail_path")
     public String getThumbnailPath() {
         return thumbnailPath;
+    }
+
+    @DynamoDbAttribute("thumbnail_id")
+    public String getThumbnailId() {
+        return thumbnailId;
+    }
+
+    @DynamoDbAttribute("thumbnail_size")
+    public long getThumbnailSize() {
+        return thumbnailSize;
+    }
+
+    @DynamoDbAttribute("thumbnail_name")
+    public String getThumbnailName() {
+        return thumbnailName;
     }
 
     @DynamoDbAttribute("grade")

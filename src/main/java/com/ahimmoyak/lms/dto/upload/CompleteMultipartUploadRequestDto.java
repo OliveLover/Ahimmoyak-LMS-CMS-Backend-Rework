@@ -17,7 +17,6 @@ public class CompleteMultipartUploadRequestDto {
     @NotNull(message = "Course ID (courseId) is a required field.")
     private String courseId;
 
-    @NotNull(message = "content ID (contentId) is a required field.")
     private String contentId;
 
     @NotBlank(message = "File Key is required.")
