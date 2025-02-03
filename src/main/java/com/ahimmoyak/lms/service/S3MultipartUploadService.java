@@ -96,7 +96,7 @@ public class S3MultipartUploadService {
         return ResponseEntity.ok(responseDto);
     }
 
-    public ResponseEntity<MessageResponseDto> completeMultipartUpload(CompleteMultipartUploadRequestDto requestDto) {
+    public ResponseEntity<CompleteMultipartUploadResponseDto> completeMultipartUpload(CompleteMultipartUploadRequestDto requestDto) {
         List<CompletedPart> completedParts = convertToCompletedParts(requestDto.getCompletedParts());
 
         CompletedMultipartUpload completedMultipartUpload = CompletedMultipartUpload.builder()
@@ -112,15 +112,9 @@ public class S3MultipartUploadService {
 
         s3Client.completeMultipartUpload(completeRequest);
 
-        if (VIDEO.equals(requestDto.getFileType())) {
-            updateContentMetaInfo(requestDto);
-        } else {
-            updateCourseMetaInfo(requestDto);
-        }
-
-        MessageResponseDto responseDto = MessageResponseDto.builder()
-                .message("Multipart upload completed successfully.")
-                .build();
+        CompleteMultipartUploadResponseDto responseDto = VIDEO.equals(requestDto.getFileType())
+                ? updateContentMetaInfo(requestDto)
+                : updateCourseMetaInfo(requestDto);
 
         return ResponseEntity.ok(responseDto);
     }
@@ -174,9 +168,15 @@ public class S3MultipartUploadService {
                 .toList();
     }
 
-    private void updateContentMetaInfo(CompleteMultipartUploadRequestDto requestDto) {
+    private CompleteMultipartUploadResponseDto updateContentMetaInfo(CompleteMultipartUploadRequestDto requestDto) {
         String courseId = requestDto.getCourseId();
         String contentId = requestDto.getContentId();
+        String fileId = requestDto.getFileId();
+        long fileSize = requestDto.getFileSize();
+        String fileName = requestDto.getFileName();
+        FileType fileType = requestDto.getFileType();
+        int videoDuration = requestDto.getVideoDuration();
+        String filePath = generateS3FileUrl(requestDto.getFileKey());
 
         Content existingContent = contentsTable.getItem(r -> r.key(k -> k
                 .partitionValue(courseId)
@@ -188,12 +188,12 @@ public class S3MultipartUploadService {
         }
 
         Content updatedContent = existingContent.toBuilder()
-                .fileId(requestDto.getFileId())
-                .fileSize(requestDto.getFileSize())
-                .fileName(requestDto.getFileName())
-                .fileType(requestDto.getFileType())
-                .videoDuration(requestDto.getVideoDuration())
-                .videoPath(generateS3FileUrl(requestDto.getFileKey()))
+                .fileId(fileId)
+                .fileSize(fileSize)
+                .fileName(fileName)
+                .fileType(fileType)
+                .videoDuration(videoDuration)
+                .videoPath(filePath)
                 .build();
 
         UpdateItemEnhancedRequest<Content> enhancedRequest = UpdateItemEnhancedRequest.builder(Content.class)
@@ -204,10 +204,22 @@ public class S3MultipartUploadService {
                 .build();
 
         contentsTable.updateItem(enhancedRequest);
+
+        return CompleteMultipartUploadResponseDto.builder()
+                .fileId(fileId)
+                .fileName(fileName)
+                .fileSize(fileSize)
+                .filePath(filePath)
+                .videoDuration(videoDuration)
+                .build();
     }
 
-    private void updateCourseMetaInfo(CompleteMultipartUploadRequestDto requestDto) {
+    private CompleteMultipartUploadResponseDto updateCourseMetaInfo(CompleteMultipartUploadRequestDto requestDto) {
         String courseId = requestDto.getCourseId();
+        String fileId = requestDto.getFileId();
+        long fileSize = requestDto.getFileSize();
+        String fileName = requestDto.getFileName();
+        String filePath = generateS3FileUrl(requestDto.getFileKey());
 
         Course existingCourse = coursesTable.getItem(r -> r.key(k -> k
                 .partitionValue(courseId)
@@ -218,10 +230,10 @@ public class S3MultipartUploadService {
         }
 
         Course updatedCourse = existingCourse.toBuilder()
-                .thumbnailId(requestDto.getFileId())
-                .thumbnailPath(generateS3FileUrl(requestDto.getFileKey()))
-                .thumbnailSize(requestDto.getFileSize())
-                .thumbnailName(requestDto.getFileName())
+                .thumbnailId(fileId)
+                .thumbnailPath(filePath)
+                .thumbnailSize(fileSize)
+                .thumbnailName(fileName)
                 .build();
 
         UpdateItemEnhancedRequest<Course> enhancedRequest = UpdateItemEnhancedRequest.builder(Course.class)
@@ -232,6 +244,13 @@ public class S3MultipartUploadService {
                 .build();
 
         coursesTable.updateItem(enhancedRequest);
+
+        return CompleteMultipartUploadResponseDto.builder()
+                .fileId(fileId)
+                .fileName(fileName)
+                .fileSize(fileSize)
+                .filePath(filePath)
+                .build();
     }
 
     private String generateS3FileUrl(String fileKey) {

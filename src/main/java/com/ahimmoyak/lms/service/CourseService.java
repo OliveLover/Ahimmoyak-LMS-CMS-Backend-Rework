@@ -190,6 +190,8 @@ public class CourseService {
                 .activeEndDate(course.getActiveEndDate())
                 .instructor(course.getInstructor())
                 .thumbnailPath(course.getThumbnailPath())
+                .thumbnailName(course.getThumbnailName())
+                .thumbnailSize(course.getThumbnailSize())
                 .grade(course.getGrade())
                 .ncsClassification(course.getNcsClassification())
                 .setDuration(course.getSetDuration())
@@ -433,6 +435,7 @@ public class CourseService {
                 .fileType(content.getFileType())
                 .videoDuration(content.getVideoDuration())
                 .fileSize(content.getFileSize())
+                .fileName(content.getFileName())
                 .quizzes(quizDtos)
                 .build();
     }

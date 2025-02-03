@@ -26,7 +26,7 @@ public class S3MultipartUploadController {
     }
 
     @PutMapping("/api/v1/s3/complete")
-    public ResponseEntity<MessageResponseDto> completeMultipartUpload(@Valid @RequestBody CompleteMultipartUploadRequestDto requestDto) {
+    public ResponseEntity<CompleteMultipartUploadResponseDto> completeMultipartUpload(@Valid @RequestBody CompleteMultipartUploadRequestDto requestDto) {
         return s3MultipartUploadService.completeMultipartUpload(requestDto);
     }
 

@@ -23,6 +23,7 @@ public class ContentDto {
     private FileType fileType;
     private int videoDuration;
     private long fileSize;
+    private String fileName;
     private List<QuizDto> quizzes;
 
 }

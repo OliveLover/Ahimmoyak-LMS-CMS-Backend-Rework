@@ -22,6 +22,8 @@ public class AdminCourseDetailsResponseDto {
     private LocalDate activeEndDate;
     private String instructor;
     private String thumbnailPath;
+    private String thumbnailName;
+    private long thumbnailSize;
     private CourseGrade grade;
     private NcsClassification ncsClassification;
     private int setDuration;
