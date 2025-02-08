@@ -28,6 +28,7 @@ public class Content {
     private ContentType contentType;
     private int contentIndex;
     private String videoPath;
+    private String fileKey;
     private String fileId;
     private FileType fileType;
     private int videoDuration;
@@ -69,6 +70,11 @@ public class Content {
     @DynamoDbAttribute("video_path")
     public String getVideoPath() {
         return videoPath;
+    }
+
+    @DynamoDbAttribute("file_key")
+    public String getFileKey() {
+        return fileKey;
     }
 
     @DynamoDbAttribute("file_id")

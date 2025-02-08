@@ -33,6 +33,7 @@ public class Course {
     private String thumbnailId;
     private long thumbnailSize;
     private String thumbnailName;
+    private String fileKey;
     private CourseGrade grade;
     private NcsClassification ncsClassification;
     private int setDuration;
@@ -95,6 +96,11 @@ public class Course {
     @DynamoDbAttribute("thumbnail_name")
     public String getThumbnailName() {
         return thumbnailName;
+    }
+
+    @DynamoDbAttribute("file_key")
+    public String getFileKey() {
+        return fileKey;
     }
 
     @DynamoDbAttribute("grade")

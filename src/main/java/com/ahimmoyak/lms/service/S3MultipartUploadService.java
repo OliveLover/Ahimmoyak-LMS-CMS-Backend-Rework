@@ -11,9 +11,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.awscore.AwsRequestOverrideConfiguration;
+import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
+import software.amazon.awssdk.enhanced.dynamodb.model.Page;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
@@ -174,9 +178,30 @@ public class S3MultipartUploadService {
         String fileId = requestDto.getFileId();
         long fileSize = requestDto.getFileSize();
         String fileName = requestDto.getFileName();
+        String fileKey = requestDto.getFileKey();
         FileType fileType = requestDto.getFileType();
         int videoDuration = requestDto.getVideoDuration();
         String filePath = generateS3FileUrl(requestDto.getFileKey());
+
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .build();
+
+        SdkIterable<Page<Content>> contentResult = contentsTable.query(queryRequest);
+        Content content = contentResult.stream()
+                .flatMap(page -> page.items().stream())
+                .findFirst()
+                .orElse(null);
+
+        String existingFileKey = null;
+
+        if (content != null) {
+            existingFileKey = content.getFileKey();
+        }
+
+        if (existingFileKey != null) {
+            deleteFileFromS3(existingFileKey);
+        }
 
         Content existingContent = contentsTable.getItem(r -> r.key(k -> k
                 .partitionValue(courseId)
@@ -191,6 +216,7 @@ public class S3MultipartUploadService {
                 .fileId(fileId)
                 .fileSize(fileSize)
                 .fileName(fileName)
+                .fileKey(fileKey)
                 .fileType(fileType)
                 .videoDuration(videoDuration)
                 .videoPath(filePath)
@@ -219,7 +245,28 @@ public class S3MultipartUploadService {
         String fileId = requestDto.getFileId();
         long fileSize = requestDto.getFileSize();
         String fileName = requestDto.getFileName();
-        String filePath = generateS3FileUrl(requestDto.getFileKey());
+        String fileKey = requestDto.getFileKey();
+        String filePath = generateS3FileUrl(fileKey);
+
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .build();
+
+        SdkIterable<Page<Course>> courseResult = coursesTable.query(queryRequest);
+        Course course = courseResult.stream()
+                .flatMap(page -> page.items().stream())
+                .findFirst()
+                .orElse(null);
+
+        String existingFileKey = null;
+
+        if (course != null) {
+            existingFileKey = course.getFileKey();
+        }
+
+        if (existingFileKey != null) {
+            deleteFileFromS3(existingFileKey);
+        }
 
         Course existingCourse = coursesTable.getItem(r -> r.key(k -> k
                 .partitionValue(courseId)
@@ -234,6 +281,7 @@ public class S3MultipartUploadService {
                 .thumbnailPath(filePath)
                 .thumbnailSize(fileSize)
                 .thumbnailName(fileName)
+                .fileKey(fileKey)
                 .build();
 
         UpdateItemEnhancedRequest<Course> enhancedRequest = UpdateItemEnhancedRequest.builder(Course.class)
@@ -251,6 +299,13 @@ public class S3MultipartUploadService {
                 .fileSize(fileSize)
                 .filePath(filePath)
                 .build();
+    }
+
+    private void deleteFileFromS3(String fileKey) {
+        s3Client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(fileKey)
+                .build());
     }
 
     private String generateS3FileUrl(String fileKey) {
