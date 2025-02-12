@@ -183,8 +183,12 @@ public class S3MultipartUploadService {
         int videoDuration = requestDto.getVideoDuration();
         String filePath = generateS3FileUrl(requestDto.getFileKey());
 
+        log.info("contentId : {}", contentId);
+        log.info("fileKey : {}", fileKey);
+
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
-                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)
+                        .sortValue(contentId)))
                 .build();
 
         SdkIterable<Page<Content>> contentResult = contentsTable.query(queryRequest);
@@ -197,10 +201,12 @@ public class S3MultipartUploadService {
 
         if (content != null) {
             existingFileKey = content.getFileKey();
+            log.info("existingFileKey : {}", existingFileKey);
         }
 
         if (existingFileKey != null) {
             deleteFileFromS3(existingFileKey);
+            log.info("delete 완료!");
         }
 
         Content existingContent = contentsTable.getItem(r -> r.key(k -> k
