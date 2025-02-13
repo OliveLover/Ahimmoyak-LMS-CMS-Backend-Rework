@@ -60,6 +60,11 @@ public class CourseController {
         return courseService.updateContent(requestDto);
     }
 
+    @DeleteMapping("/api/v1/admin/courses/{courseId}/sessions/{sessionId}/contents/{contentId}")
+    public ResponseEntity<MessageResponseDto> deleteContent(@PathVariable String courseId, @PathVariable String sessionId, @PathVariable String contentId) {
+        return courseService.deleteContent(courseId, contentId);
+    }
+
     @PutMapping("/api/v1/admin/courses/sessions/contents/quizzes")
     public ResponseEntity<AdminCreateQuizResponseDto> createQuiz(@Valid @RequestBody AdminCreateQuizRequestDto requestDto) {
         return courseService.createQuiz(requestDto);

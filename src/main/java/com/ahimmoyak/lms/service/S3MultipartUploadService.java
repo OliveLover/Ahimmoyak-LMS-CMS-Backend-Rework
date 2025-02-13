@@ -182,7 +182,7 @@ public class S3MultipartUploadService {
         FileType fileType = requestDto.getFileType();
         int videoDuration = requestDto.getVideoDuration();
         String filePath = generateS3FileUrl(requestDto.getFileKey());
-        
+
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)
                         .sortValue(contentId)))
@@ -302,7 +302,7 @@ public class S3MultipartUploadService {
                 .build();
     }
 
-    private void deleteFileFromS3(String fileKey) {
+    public void deleteFileFromS3(String fileKey) {
         s3Client.deleteObject(DeleteObjectRequest.builder()
                 .bucket(bucketName)
                 .key(fileKey)

@@ -40,13 +40,15 @@ public class CourseService {
     private final DynamoDbTable<Session> sessionsTable;
     private final DynamoDbTable<Content> contentsTable;
     private final DynamoDbTable<Quiz> quizzesTable;
+    private final S3MultipartUploadService s3MultipartUploadService;
 
     @Autowired
-    public CourseService(DynamoDbEnhancedClient enhancedClient) {
+    public CourseService(DynamoDbEnhancedClient enhancedClient, S3MultipartUploadService s3MultipartUploadService) {
         this.coursesTable = enhancedClient.table("courses", COURSES_TABLE_SCHEMA);
         this.sessionsTable = enhancedClient.table("sessions", SESSIONS_TABLE_SCHEMA);
         this.contentsTable = enhancedClient.table("contents", CONTENTS_TABLE_SCHEMA);
         this.quizzesTable = enhancedClient.table("quizzes", QUIZZES_TABLE_SCHEMA);
+        this.s3MultipartUploadService = s3MultipartUploadService;
     }
 
     public ResponseEntity<AdminManagedCoursesResponseDto> getManagedCourses() {
@@ -343,6 +345,34 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
+    public ResponseEntity<MessageResponseDto> deleteContent(String courseId, String contentId) {
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)
+                        .sortValue(contentId))
+                )
+                .build();
+
+        SdkIterable<Page<Content>> result = contentsTable.query(queryRequest);
+        Content existingContent = result.stream()
+                .flatMap(page -> page.items().stream())
+                .findFirst()
+                .orElseThrow(
+                        () -> new NotFoundException("Content not found for courseId: " + courseId + ", contentId: " + contentId)
+                );
+
+        if (existingContent.getFileKey() != null && !existingContent.getFileKey().isEmpty()) {
+            s3MultipartUploadService.deleteFileFromS3(existingContent.getFileKey());
+        }
+
+        contentsTable.deleteItem(existingContent);
+
+        MessageResponseDto responseDto = MessageResponseDto.builder()
+                .message("Content deleted successfully.")
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
     public ResponseEntity<AdminCreateQuizResponseDto> createQuiz(AdminCreateQuizRequestDto requestDto) {
         List<QuizDto> quizDtos = requestDto.getQuizzes();
         List<String> quizIds = new ArrayList<>();
@@ -450,5 +480,4 @@ public class CourseService {
                 .explanation(quiz.getExplanation())
                 .build();
     }
-
 }
