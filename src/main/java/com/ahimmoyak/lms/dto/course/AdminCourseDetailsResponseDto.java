@@ -29,6 +29,5 @@ public class AdminCourseDetailsResponseDto {
     private int setDuration;
     private FundingType fundingType;
     private List<CardType> cardType;
-    private List<SessionDto> sessions;
 
 }

@@ -24,6 +24,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -168,20 +169,11 @@ public class CourseService {
                 .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
                 .build();
 
-        SdkIterable<Page<Course>> courseResult = coursesTable.query(queryRequest);
-        Course course = courseResult.stream()
+        SdkIterable<Page<Course>> result = coursesTable.query(queryRequest);
+        Course course = result.stream()
                 .flatMap(page -> page.items().stream())
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Course not found with ID: " + courseId));
-
-        SdkIterable<Page<Session>> sessionResult = sessionsTable.query(queryRequest);
-        List<SessionDto> sessionDtos = sessionResult.stream()
-                .flatMap(page -> page.items().stream())
-                .map(session -> {
-                    List<ContentDto> contentDtos = getContentByCourseIdAndSessionId(courseId, session.getSessionId());
-                    return mapToSessionDto(session, contentDtos);
-                })
-                .toList();
 
         AdminCourseDetailsResponseDto responseDto = AdminCourseDetailsResponseDto.builder()
                 .courseId(course.getCourseId())
@@ -199,13 +191,33 @@ public class CourseService {
                 .setDuration(course.getSetDuration())
                 .fundingType(course.getFundingType())
                 .cardType(course.getCardType())
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    public ResponseEntity<AdminCourseSessionInfoResponseDto> getCourseSessionInfo(String courseId) {
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .build();
+
+        SdkIterable<Page<Session>> result = sessionsTable.query(queryRequest);
+        List<SessionDto> sessionDtos = result.stream()
+                .flatMap(page -> page.items().stream())
+                .map(session -> {
+                    List<ContentDto> contentDtos = getContentByCourseIdAndSessionId(courseId, session.getSessionId());
+                    return mapToSessionDto(session, contentDtos);
+                })
+                .toList();
+
+        AdminCourseSessionInfoResponseDto responseDto = AdminCourseSessionInfoResponseDto.builder()
                 .sessions(sessionDtos)
                 .build();
 
         return ResponseEntity.ok(responseDto);
     }
 
-    public ResponseEntity<AdminCourseSessionInfoResponseDto> getCourseSessionInfo(String courseId, String sessionId) {
+    public ResponseEntity<AdminCourseSessionPreviewResponseDto> getCourseSessionPreview(String courseId, String sessionId) {
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)
                         .sortValue(sessionId)))
@@ -223,7 +235,7 @@ public class CourseService {
                         new ResourceNotFoundException("Session not found for courseId: " + courseId + ", sessionId: " + sessionId)
                 );
 
-        AdminCourseSessionInfoResponseDto responseDto = AdminCourseSessionInfoResponseDto.builder()
+        AdminCourseSessionPreviewResponseDto responseDto = AdminCourseSessionPreviewResponseDto.builder()
                 .session(sessionDto)
                 .build();
 
@@ -366,6 +378,8 @@ public class CourseService {
 
         contentsTable.deleteItem(existingContent);
 
+        reorderContentIndex(courseId);
+
         MessageResponseDto responseDto = MessageResponseDto.builder()
                 .message("Content deleted successfully.")
                 .build();
@@ -479,5 +493,33 @@ public class CourseService {
                 .answer(quiz.getAnswer())
                 .explanation(quiz.getExplanation())
                 .build();
+    }
+
+    private void reorderContentIndex(String courseId) {
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId))
+                )
+                .build();
+
+        List<Content> contents = contentsTable.query(queryRequest)
+                .stream()
+                .flatMap(page -> page.items().stream())
+                .sorted(Comparator.comparing(Content::getContentIndex))
+                .toList();
+
+        if (contents.isEmpty()) {
+            return;
+        }
+
+        List<Content> updatedContents = new ArrayList<>();
+
+        int contentsSize = contents.size();
+        for (int i = 0; i < contentsSize; i++) {
+            Content content = contents.get(i);
+            content.setContentIndex(i + 1);
+            updatedContents.add(content);
+        }
+
+        updatedContents.forEach(contentsTable::updateItem);
     }
 }

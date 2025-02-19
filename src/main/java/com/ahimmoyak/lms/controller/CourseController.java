@@ -35,9 +35,14 @@ public class CourseController {
         return courseService.getAdminCourseDetails(courseId);
     }
 
+    @GetMapping("/api/v1/admin/courses/{courseId}/sessions")
+    public ResponseEntity<AdminCourseSessionInfoResponseDto> getCourseSessionInfo(@PathVariable String courseId) {
+        return courseService.getCourseSessionInfo(courseId);
+    }
+
     @GetMapping("/api/v1/admin/courses/{courseId}/sessions/{sessionId}/preview")
-    public ResponseEntity<AdminCourseSessionInfoResponseDto> getCourseSessionInfo(@PathVariable String courseId, @PathVariable String sessionId) {
-        return courseService.getCourseSessionInfo(courseId, sessionId);
+    public ResponseEntity<AdminCourseSessionPreviewResponseDto> getCourseSessionPreview(@PathVariable String courseId, @PathVariable String sessionId) {
+        return courseService.getCourseSessionPreview(courseId, sessionId);
     }
 
     @PostMapping("/api/v1/admin/courses/sessions")
