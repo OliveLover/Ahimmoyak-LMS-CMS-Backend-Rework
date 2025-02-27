@@ -298,6 +298,52 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
+    public ResponseEntity<MessageResponseDto> reorderSessions(AdminReorderSessionRequestDto requestDto) {
+        String courseId = requestDto.getCourseId();
+        int fromSessionIndex = requestDto.getFromSessionIndex();
+        int toSessionIndex = requestDto.getToSessionIndex();
+
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .build();
+
+        List<Session> sessions = new ArrayList<>(sessionsTable.query(queryRequest)
+                .stream()
+                .flatMap(page -> page.items().stream())
+                .sorted(Comparator.comparing(Session::getSessionIndex))
+                .toList());
+
+        if (sessions.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponseDto("No sessions found for the given courseId."));
+        }
+
+        Session movedSession = sessions.stream()
+                .filter(session -> session.getSessionIndex() == fromSessionIndex)
+                .findFirst()
+                .orElse(null);
+
+        if (movedSession == null) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponseDto("Invalid fromSessionIndex."));
+        }
+
+        sessions.remove(movedSession);
+
+        sessions.add(toSessionIndex - 1, movedSession);
+
+        for (int i = 0; i < sessions.size(); i++) {
+            sessions.get(i).setSessionIndex(i + 1);
+            sessionsTable.updateItem(sessions.get(i));
+        }
+
+        MessageResponseDto responseDto = MessageResponseDto.builder()
+                .message("Sessions reordered successfully.")
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
     public ResponseEntity<AdminCreateContentResponseDto> createContent(AdminCreateContentRequestDto requestDto) {
         String contentId = requestDto.getContentId();
 

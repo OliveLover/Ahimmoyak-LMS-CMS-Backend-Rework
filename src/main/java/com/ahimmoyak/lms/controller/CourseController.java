@@ -55,6 +55,11 @@ public class CourseController {
         return courseService.updateSession(requestDto);
     }
 
+    @PatchMapping("/api/v1/admin/courses/sessions/reorder")
+    public ResponseEntity<MessageResponseDto> reorderSessions(@Valid @RequestBody AdminReorderSessionRequestDto requestDto) {
+        return courseService.reorderSessions(requestDto);
+    }
+
     @PostMapping("/api/v1/admin/courses/sessions/contents")
     public ResponseEntity<AdminCreateContentResponseDto> createContent(@Valid @RequestBody AdminCreateContentRequestDto requestDto) {
         return courseService.createContent(requestDto);
