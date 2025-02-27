@@ -6,6 +6,7 @@ import com.ahimmoyak.lms.entity.Content;
 import com.ahimmoyak.lms.entity.Course;
 import com.ahimmoyak.lms.entity.Quiz;
 import com.ahimmoyak.lms.entity.Session;
+import com.ahimmoyak.lms.exception.BadRequestException;
 import com.ahimmoyak.lms.exception.NotFoundException;
 import com.ahimmoyak.lms.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
@@ -315,8 +316,7 @@ public class CourseService {
                 .toList());
 
         if (sessions.isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body(new MessageResponseDto("No sessions found for the given courseId."));
+            throw new NotFoundException("No sessions found for the given courseId.");
         }
 
         Session movedSession = sessions.stream()
@@ -325,8 +325,7 @@ public class CourseService {
                 .orElse(null);
 
         if (movedSession == null) {
-            return ResponseEntity.badRequest()
-                    .body(new MessageResponseDto("Invalid fromSessionIndex."));
+            throw new BadRequestException("Invalid fromSessionIndex.");
         }
 
         sessions.remove(movedSession);
@@ -471,7 +470,7 @@ public class CourseService {
 
         contentsTable.deleteItem(existingContent);
 
-        reorderContentIndex(courseId);
+        reorderContentIndexAfterDelete(courseId);
 
         MessageResponseDto responseDto = MessageResponseDto.builder()
                 .message("Content deleted successfully.")
@@ -538,6 +537,39 @@ public class CourseService {
 
         MessageResponseDto responseDto = MessageResponseDto.builder()
                 .message("Quiz updated successfully.")
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    public ResponseEntity<MessageResponseDto> deleteQuiz(String courseId, String quizId) {
+        log.info("courseId : {}", courseId);
+        log.info("quizId : {}", quizId);
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)
+                        .sortValue(quizId))
+                )
+                .build();
+
+        SdkIterable<Page<Quiz>> result = quizzesTable.query(queryRequest);
+        Quiz existingQuiz = result.stream()
+                .flatMap(page -> page.items().stream())
+                .findFirst()
+                .orElseThrow(
+                        () -> new NotFoundException("Quiz not found for courseId: " + courseId + ", quizId: " + quizId)
+                );
+
+        if (existingQuiz == null) {
+            throw new NotFoundException("The course or content with the given IDs does not exist.");
+        }
+
+        quizzesTable.deleteItem(existingQuiz);
+
+        reorderContentIndexAfterDelete(courseId);
+        reorderQuizIndexAfterDelete(courseId);
+
+        MessageResponseDto responseDto = MessageResponseDto.builder()
+                .message("Quiz deleted successfully.")
                 .build();
 
         return ResponseEntity.ok(responseDto);
@@ -617,7 +649,7 @@ public class CourseService {
                 .build();
     }
 
-    private void reorderContentIndex(String courseId) {
+    private void reorderContentIndexAfterDelete(String courseId) {
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId))
                 )
@@ -643,5 +675,33 @@ public class CourseService {
         }
 
         updatedContents.forEach(contentsTable::updateItem);
+    }
+
+    private void reorderQuizIndexAfterDelete(String courseId) {
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId))
+                )
+                .build();
+
+        List<Quiz> quizzes = quizzesTable.query(queryRequest)
+                .stream()
+                .flatMap(page -> page.items().stream())
+                .sorted(Comparator.comparing(Quiz::getQuizIndex))
+                .toList();
+
+        if (quizzes.isEmpty()) {
+            return;
+        }
+
+        List<Quiz> updatedQuizzes = new ArrayList<>();
+
+        int quizzesSize = quizzes.size();
+        for (int i = 0; i < quizzesSize; i++) {
+            Quiz quiz = quizzes.get(i);
+            quiz.setQuizIndex(i + 1);
+            updatedQuizzes.add(quiz);
+        }
+
+        updatedQuizzes.forEach(quizzesTable::updateItem);
     }
 }
