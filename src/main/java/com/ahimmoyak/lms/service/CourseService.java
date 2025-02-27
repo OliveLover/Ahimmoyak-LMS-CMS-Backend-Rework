@@ -414,6 +414,42 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
+    public ResponseEntity<MessageResponseDto> updateQuiz(AdminUpdateQuizRequestDto requestDto) {
+        String courseId = requestDto.getCourseId();
+        String quizId = requestDto.getQuizId();
+
+        Quiz existingQuiz = quizzesTable.getItem(r -> r.key(k -> k
+                .partitionValue(courseId)
+                .sortValue(quizId)
+        ));
+
+        if (existingQuiz == null) {
+            throw new NotFoundException("The course or content with the given IDs does not exist.");
+        }
+
+        Quiz updatedQuiz = existingQuiz.toBuilder()
+                .question(requestDto.getQuestion())
+                .options(requestDto.getOptions())
+                .answer(requestDto.getAnswer())
+                .explanation(requestDto.getExplanation())
+                .build();
+
+        UpdateItemEnhancedRequest<Quiz> enhancedRequest = UpdateItemEnhancedRequest.builder(Quiz.class)
+                .item(updatedQuiz)
+                .conditionExpression(Expression.builder()
+                        .expression("attribute_exists(course_id)")
+                        .build())
+                .build();
+
+        quizzesTable.updateItem(enhancedRequest);
+
+        MessageResponseDto responseDto = MessageResponseDto.builder()
+                .message("Quiz updated successfully.")
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
     private int calculateDaysDifference(LocalDate endDate) {
         if (endDate == null) {
             return 0;
