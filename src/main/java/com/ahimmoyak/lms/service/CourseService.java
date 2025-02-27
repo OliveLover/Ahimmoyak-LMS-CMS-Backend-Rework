@@ -8,6 +8,7 @@ import com.ahimmoyak.lms.entity.Quiz;
 import com.ahimmoyak.lms.entity.Session;
 import com.ahimmoyak.lms.exception.NotFoundException;
 import com.ahimmoyak.lms.exception.ResourceNotFoundException;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -298,7 +299,7 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
-    public ResponseEntity<MessageResponseDto> reorderSessions(AdminReorderSessionRequestDto requestDto) {
+    public ResponseEntity<MessageResponseDto> reorderSessions(AdminReorderSessionsRequestDto requestDto) {
         String courseId = requestDto.getCourseId();
         int fromSessionIndex = requestDto.getFromSessionIndex();
         int toSessionIndex = requestDto.getToSessionIndex();
@@ -398,6 +399,52 @@ public class CourseService {
 
         MessageResponseDto responseDto = MessageResponseDto.builder()
                 .message("Session updated successfully.")
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    public ResponseEntity<MessageResponseDto> reorderContents(@Valid AdminReorderContentsRequestDto requestDto) {
+        String courseId = requestDto.getCourseId();
+        int fromContentIndex = requestDto.getFromContentIndex();
+        int toContentIndex = requestDto.getToContentIndex();
+
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .build();
+
+        List<Content> contents = new ArrayList<>(contentsTable.query(queryRequest)
+                .stream()
+                .flatMap(page -> page.items().stream())
+                .sorted(Comparator.comparing(Content::getContentIndex))
+                .toList());
+
+        if (contents.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponseDto("No sessions found for the given courseId."));
+        }
+
+        Content movedContent = contents.stream()
+                .filter(content -> content.getContentIndex() == fromContentIndex)
+                .findFirst()
+                .orElse(null);
+
+        if (movedContent == null) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponseDto("Invalid fromContentIndex."));
+        }
+
+        contents.remove(movedContent);
+
+        contents.add(toContentIndex - 1, movedContent);
+
+        for (int i = 0; i < contents.size(); i++) {
+            contents.get(i).setContentIndex(i + 1);
+            contentsTable.updateItem(contents.get(i));
+        }
+
+        MessageResponseDto responseDto = MessageResponseDto.builder()
+                .message("Contents reordered successfully.")
                 .build();
 
         return ResponseEntity.ok(responseDto);

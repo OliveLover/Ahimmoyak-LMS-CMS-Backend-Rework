@@ -56,7 +56,7 @@ public class CourseController {
     }
 
     @PatchMapping("/api/v1/admin/courses/sessions/reorder")
-    public ResponseEntity<MessageResponseDto> reorderSessions(@Valid @RequestBody AdminReorderSessionRequestDto requestDto) {
+    public ResponseEntity<MessageResponseDto> reorderSessions(@Valid @RequestBody AdminReorderSessionsRequestDto requestDto) {
         return courseService.reorderSessions(requestDto);
     }
 
@@ -68,6 +68,11 @@ public class CourseController {
     @PutMapping("/api/v1/admin/courses/sessions/contents")
     public ResponseEntity<MessageResponseDto> updateContent(@Valid @RequestBody AdminUpdateContentRequestDto requestDto) {
         return courseService.updateContent(requestDto);
+    }
+
+    @PatchMapping("/api/v1/admin/courses/sessions/contents/reorder")
+    public ResponseEntity<MessageResponseDto> reorderContents(@Valid @RequestBody AdminReorderContentsRequestDto requestDto) {
+        return courseService.reorderContents(requestDto);
     }
 
     @DeleteMapping("/api/v1/admin/courses/{courseId}/sessions/{sessionId}/contents/{contentId}")

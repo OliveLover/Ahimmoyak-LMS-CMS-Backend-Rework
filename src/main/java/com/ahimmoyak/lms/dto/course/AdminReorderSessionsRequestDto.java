@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminReorderSessionRequestDto {
+public class AdminReorderSessionsRequestDto {
 
     @NotNull(message = "Course ID (courseId) is a required field.")
     private String courseId;
