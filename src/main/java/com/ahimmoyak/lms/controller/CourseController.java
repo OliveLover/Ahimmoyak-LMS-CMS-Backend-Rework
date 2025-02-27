@@ -70,7 +70,7 @@ public class CourseController {
         return courseService.deleteContent(courseId, contentId);
     }
 
-    @PutMapping("/api/v1/admin/courses/sessions/contents/quizzes")
+    @PostMapping("/api/v1/admin/courses/sessions/contents/quizzes")
     public ResponseEntity<AdminCreateQuizResponseDto> createQuiz(@Valid @RequestBody AdminCreateQuizRequestDto requestDto) {
         return courseService.createQuiz(requestDto);
     }

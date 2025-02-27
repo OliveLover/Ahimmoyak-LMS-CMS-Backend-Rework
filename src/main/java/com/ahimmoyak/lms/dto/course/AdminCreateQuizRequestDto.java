@@ -21,6 +21,11 @@ public class AdminCreateQuizRequestDto {
     @NotNull(message = "Content ID (contentId) is a required field.")
     private String contentId;
 
-    private List<QuizDto> quizzes;
+    private String quizId;
+    private int quizIndex;
+    private String question;
+    private List<String> options;
+    private int answer;
+    private String explanation;
 
 }

@@ -388,34 +388,27 @@ public class CourseService {
     }
 
     public ResponseEntity<AdminCreateQuizResponseDto> createQuiz(AdminCreateQuizRequestDto requestDto) {
-        List<QuizDto> quizDtos = requestDto.getQuizzes();
-        List<String> quizIds = new ArrayList<>();
+        String quizId = requestDto.getQuizId();
 
-        quizDtos.forEach(quizDto -> {
-            String quizId = quizDto.getQuizId();
+        if (quizId == null) {
+            quizId = "quiz_" + UUID.randomUUID();
+        }
 
-            if (quizDto.getQuizId() == null) {
-                quizId = "quiz_" + UUID.randomUUID();
-            }
+        Quiz quiz = Quiz.builder()
+                .courseId(requestDto.getCourseId())
+                .quizId(quizId)
+                .contentId(requestDto.getContentId())
+                .quizIndex(requestDto.getQuizIndex())
+                .question(requestDto.getQuestion())
+                .options(requestDto.getOptions())
+                .answer(requestDto.getAnswer())
+                .explanation(requestDto.getExplanation())
+                .build();
 
-            Quiz quiz = Quiz.builder()
-                    .courseId(requestDto.getCourseId())
-                    .quizId(quizId)
-                    .contentId(requestDto.getContentId())
-                    .quizIndex(quizDto.getQuizIndex())
-                    .question(quizDto.getQuestion())
-                    .options(quizDto.getOptions())
-                    .answer(quizDto.getAnswer())
-                    .explanation(quizDto.getExplanation())
-                    .build();
-
-            quizzesTable.putItem(quiz);
-
-            quizIds.add(quizId);
-        });
+        quizzesTable.putItem(quiz);
 
         AdminCreateQuizResponseDto responseDto = AdminCreateQuizResponseDto.builder()
-                .quizzes(quizIds)
+                .quizId(quizId)
                 .build();
 
         return ResponseEntity.ok(responseDto);
