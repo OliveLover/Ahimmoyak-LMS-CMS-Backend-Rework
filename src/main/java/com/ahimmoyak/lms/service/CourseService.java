@@ -22,6 +22,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -464,6 +465,8 @@ public class CourseService {
                         () -> new NotFoundException("Content not found for courseId: " + courseId + ", contentId: " + contentId)
                 );
 
+        deleteAllQuiz(courseId, contentId);
+
         if (existingContent.getFileKey() != null && !existingContent.getFileKey().isEmpty()) {
             s3MultipartUploadService.deleteFileFromS3(existingContent.getFileKey());
         }
@@ -543,8 +546,6 @@ public class CourseService {
     }
 
     public ResponseEntity<MessageResponseDto> deleteQuiz(String courseId, String quizId) {
-        log.info("courseId : {}", courseId);
-        log.info("quizId : {}", quizId);
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)
                         .sortValue(quizId))
@@ -703,5 +704,30 @@ public class CourseService {
         }
 
         updatedQuizzes.forEach(quizzesTable::updateItem);
+    }
+
+    private void deleteAllQuiz(String courseId, String contentId) {
+        Expression expression = Expression.builder()
+                .expression("#contentId = :contentId")
+                .putExpressionName("#contentId", "content_id")
+                .putExpressionValue(":contentId", AttributeValue.builder()
+                        .s(contentId)
+                        .build())
+                .build();
+
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .filterExpression(expression)
+                .build();
+
+        SdkIterable<Page<Quiz>> result = quizzesTable.query(queryRequest);
+
+        if (result.stream().flatMap(page -> page.items().stream()).findFirst().isEmpty()) {
+            return;
+        }
+
+        result.stream()
+                .flatMap(page -> page.items().stream())
+                .forEach(quizzesTable::deleteItem);
     }
 }
