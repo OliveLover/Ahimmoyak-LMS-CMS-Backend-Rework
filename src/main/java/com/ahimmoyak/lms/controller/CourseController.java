@@ -60,6 +60,11 @@ public class CourseController {
         return courseService.reorderSessions(requestDto);
     }
 
+    @DeleteMapping("/api/v1/admin/courses/{courseId}/sessions/{sessionId}")
+    public ResponseEntity<MessageResponseDto> deleteSession(@PathVariable String courseId, @PathVariable String sessionId) {
+        return courseService.deleteSession(courseId, sessionId);
+    }
+
     @PostMapping("/api/v1/admin/courses/sessions/contents")
     public ResponseEntity<AdminCreateContentResponseDto> createContent(@Valid @RequestBody AdminCreateContentRequestDto requestDto) {
         return courseService.createContent(requestDto);
@@ -76,8 +81,8 @@ public class CourseController {
     }
 
     @DeleteMapping("/api/v1/admin/courses/{courseId}/sessions/{sessionId}/contents/{contentId}")
-    public ResponseEntity<MessageResponseDto> deleteContent(@PathVariable String courseId, @PathVariable String contentId) {
-        return courseService.deleteContent(courseId, contentId);
+    public ResponseEntity<MessageResponseDto> deleteContent(@PathVariable String courseId, @PathVariable String sessionId, @PathVariable String contentId) {
+        return courseService.deleteContent(courseId, sessionId, contentId);
     }
 
     @PostMapping("/api/v1/admin/courses/sessions/contents/quizzes")

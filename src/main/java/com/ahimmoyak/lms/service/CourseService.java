@@ -345,6 +345,32 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
+    public ResponseEntity<MessageResponseDto> deleteSession(String courseId, String sessionId) {
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .build();
+
+        SdkIterable<Page<Session>> result = sessionsTable.query(queryRequest);
+        Session existingSession = result.stream()
+                .flatMap(page -> page.items().stream())
+                .findFirst()
+                .orElseThrow(
+                        () -> new NotFoundException("Session not found for courseId: " + courseId + ", sessionId: " + sessionId)
+                );
+
+        deleteAllContent(courseId, sessionId);
+
+        sessionsTable.deleteItem(existingSession);
+
+        reorderSessionIndexAfterDelete(courseId);
+
+        MessageResponseDto responseDto = MessageResponseDto.builder()
+                .message("Session deleted successfully.")
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
     public ResponseEntity<AdminCreateContentResponseDto> createContent(AdminCreateContentRequestDto requestDto) {
         String contentId = requestDto.getContentId();
 
@@ -450,7 +476,7 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
-    public ResponseEntity<MessageResponseDto> deleteContent(String courseId, String contentId) {
+    public ResponseEntity<MessageResponseDto> deleteContent(String courseId, String sessionId, String contentId) {
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)
                         .sortValue(contentId))
@@ -473,7 +499,7 @@ public class CourseService {
 
         contentsTable.deleteItem(existingContent);
 
-        reorderContentIndexAfterDelete(courseId);
+        reorderContentIndexAfterDelete(courseId, sessionId);
 
         MessageResponseDto responseDto = MessageResponseDto.builder()
                 .message("Content deleted successfully.")
@@ -566,7 +592,6 @@ public class CourseService {
 
         quizzesTable.deleteItem(existingQuiz);
 
-        reorderContentIndexAfterDelete(courseId);
         reorderQuizIndexAfterDelete(courseId);
 
         MessageResponseDto responseDto = MessageResponseDto.builder()
@@ -650,10 +675,45 @@ public class CourseService {
                 .build();
     }
 
-    private void reorderContentIndexAfterDelete(String courseId) {
+    private void reorderSessionIndexAfterDelete(String courseId) {
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
-                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId))
-                )
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .build();
+
+        List<Session> sessions = sessionsTable.query(queryRequest)
+                .stream()
+                .flatMap(page -> page.items().stream())
+                .sorted(Comparator.comparing(Session::getSessionIndex))
+                .toList();
+
+        if (sessions.isEmpty()) {
+            return;
+        }
+
+        List<Session> updatedSessions = new ArrayList<>();
+
+        int sessionsSize = sessions.size();
+        for (int i = 0; i < sessionsSize; i++) {
+            Session session = sessions.get(i);
+            session.setSessionIndex(i + 1);
+            updatedSessions.add(session);
+        }
+
+        updatedSessions.forEach(sessionsTable::updateItem);
+    }
+
+    private void reorderContentIndexAfterDelete(String courseId, String sessionId) {
+        Expression expression = Expression.builder()
+                .expression("#sessionId = :sessionId")
+                .putExpressionName("#sessionId", "session_id")
+                .putExpressionValue(":sessionId", AttributeValue.builder()
+                        .s(sessionId)
+                        .build())
+                .build();
+
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .filterExpression(expression)
                 .build();
 
         List<Content> contents = contentsTable.query(queryRequest)
@@ -680,8 +740,7 @@ public class CourseService {
 
     private void reorderQuizIndexAfterDelete(String courseId) {
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
-                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId))
-                )
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
                 .build();
 
         List<Quiz> quizzes = quizzesTable.query(queryRequest)
@@ -704,6 +763,41 @@ public class CourseService {
         }
 
         updatedQuizzes.forEach(quizzesTable::updateItem);
+    }
+
+    private void deleteAllContent(String courseId, String sessionId) {
+        Expression expression = Expression.builder()
+                .expression("#sessionId = :sessionId")
+                .putExpressionName("#sessionId", "session_id")
+                .putExpressionValue(":sessionId", AttributeValue.builder()
+                        .s(sessionId)
+                        .build())
+                .build();
+
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .filterExpression(expression)
+                .build();
+
+        SdkIterable<Page<Content>> result = contentsTable.query(queryRequest);
+
+        List<Content> contents = result.stream()
+                .flatMap(page -> page.items().stream())
+                .toList();
+
+        if (contents.isEmpty()) {
+            return;
+        }
+
+        contents.forEach(content -> {
+            Content existingContent = findContentById(courseId, content.getContentId());
+
+            deleteAllQuiz(courseId, content.getContentId());
+
+            deleteFileFromS3IfExists(existingContent.getFileKey());
+
+            contentsTable.deleteItem(content);
+        });
     }
 
     private void deleteAllQuiz(String courseId, String contentId) {
@@ -730,4 +824,26 @@ public class CourseService {
                 .flatMap(page -> page.items().stream())
                 .forEach(quizzesTable::deleteItem);
     }
+
+    private Content findContentById(String courseId, String contentId) {
+        QueryEnhancedRequest singleQueryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)
+                        .sortValue(contentId)))
+                .build();
+
+        SdkIterable<Page<Content>> singleResult = contentsTable.query(singleQueryRequest);
+
+        return singleResult.stream()
+                .flatMap(page -> page.items().stream())
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(
+                        "Content not found for courseId: " + courseId + ", contentId: " + contentId));
+    }
+
+    private void deleteFileFromS3IfExists(String fileKey) {
+        if (fileKey != null && !fileKey.isEmpty()) {
+            s3MultipartUploadService.deleteFileFromS3(fileKey);
+        }
+    }
+
 }
