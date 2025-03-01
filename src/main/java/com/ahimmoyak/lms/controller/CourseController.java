@@ -30,6 +30,11 @@ public class CourseController {
         return courseService.updateCourse(requestDto);
     }
 
+    @DeleteMapping("/api/v1/admin/courses")
+    public ResponseEntity<MessageResponseDto> deleteCourses(@RequestBody AdminDeleteCoursesRequestDto requestDto) {
+        return courseService.deleteCourses(requestDto);
+    }
+
     @GetMapping("/api/v1/admin/courses/{courseId}")
     public ResponseEntity<AdminCourseDetailsResponseDto> getAdminCourseDetails(@PathVariable String courseId) {
         return courseService.getAdminCourseDetails(courseId);

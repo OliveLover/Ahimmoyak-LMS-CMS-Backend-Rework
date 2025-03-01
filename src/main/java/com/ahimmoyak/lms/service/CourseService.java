@@ -167,6 +167,38 @@ public class CourseService {
         return ResponseEntity.ok(responseDto);
     }
 
+    public ResponseEntity<MessageResponseDto> deleteCourses(@Valid AdminDeleteCoursesRequestDto requestDto) {
+        List<String> courseIds = requestDto.getCourseIds();
+
+        for (String courseId : courseIds) {
+            QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                    .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                    .build();
+
+            SdkIterable<Page<Course>> result = coursesTable.query(queryRequest);
+
+            Course existingCourse = result.stream()
+                    .flatMap(page -> page.items().stream())
+                    .findFirst()
+                    .orElseThrow(() -> new NotFoundException("Course not found with id: " + courseId));
+
+            deleteFileFromS3IfExists(existingCourse.getFileKey());
+
+            coursesTable.deleteItem(existingCourse);
+        }
+
+        for (String courseId : courseIds) {
+
+            deleteAllSession(courseId);
+        }
+
+        MessageResponseDto responseDto = MessageResponseDto.builder()
+                .message("Courses deleted successfully.")
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
     public ResponseEntity<AdminCourseDetailsResponseDto> getAdminCourseDetails(String courseId) {
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
@@ -675,6 +707,34 @@ public class CourseService {
                 .build();
     }
 
+    private void deleteAllSession(String courseId) {
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .build();
+
+        SdkIterable<Page<Session>> result = sessionsTable.query(queryRequest);
+        List<Session> sessions = result.stream()
+                .flatMap(page -> page.items().stream())
+                .toList();
+
+        if (sessions.isEmpty()) {
+            return;
+        }
+
+        List<String> sessionIds = sessions.stream()
+                .map(Session::getSessionId)
+                .toList();
+
+        for (String sessionId : sessionIds) {
+            deleteAllContent(courseId, sessionId);
+        }
+
+        for (Session session : sessions) {
+            sessionsTable.deleteItem(session);
+        }
+
+    }
+
     private void reorderSessionIndexAfterDelete(String courseId) {
         QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
@@ -845,5 +905,4 @@ public class CourseService {
             s3MultipartUploadService.deleteFileFromS3(fileKey);
         }
     }
-
 }
