@@ -53,8 +53,10 @@
 <br />
 
 ### 🗓️ 개발 기간
- 2024.1.7 ~  (진행중)
-
+1차 훈련과정 구성하기 : 2024.1.7 ~ 2024.2.27 (완료)
+ 
+2차 사용자 화면 구성하기 : 2024.2.28 ~ (진행중)
+ 
 <br />
 
  ## ⚙️ 기술 스택 & Tools
@@ -107,9 +109,27 @@
   <img src="https://img.shields.io/badge/GITHUB-181717?style=for-the-badge&logo=github&logoColor=white">
   <img src="https://img.shields.io/badge/googlesheets-34A853?style=for-the-badge&logo=googlesheets&logoColor=white">
 </div>
+
 <br />
 
- ## 🗺 기능 동작
+## 🎨 인프라 아키텍처
+
+<details>
+  <summary>
+     $\rm{\normalsize{\color{#6580DD}1차,\ 2차\ 인프라 아키텍처}}$
+  </summary>
+
+  <br />
+
+ ![Ifra Architecture](https://github.com/user-attachments/assets/2ec6fde1-c712-4c03-80af-39074e77906f)
+
+</details>
+
+<br />
+
+ ## 🗺 기능 동작(UI, UX)
+
+ ### 1차 훈련과정 구성하기
 
  <details>
   <summary>
@@ -201,7 +221,7 @@
 
  <details>
   <summary>
-     $\rm{\normalsize{\color{#6580DD}구성한\ 훈련과정의\ 페이지 순서 바꾸기(차시 순서 바꾸기}}$
+     $\rm{\normalsize{\color{#6580DD}구성한\ 훈련과정의\ 페이지 순서 바꾸기(차시 순서 바꾸기)}}$
   </summary>
 
   <br />
@@ -259,3 +279,34 @@
   <p>* 훈련 과정 삭제 " 해당 훈련과정과 관련된 차시와 영상, 퀴즈, 썸네일이 모두 제거됩니다.</p>
 
 </details>
+
+<br />
+
+## 기능 설계 및 endpoint
+
+<br />
+
+| No. | 기능 | endpoint |
+|:---:|:---|:---|
+| 1 | 훈련 과정들의 메타 데이터 조회 | `GET` /api/v1/admin/courses |
+| 2 | 훈련 과정 생성 | `POST` /api/v1/admin/courses |
+| 3 | 훈련 과정의 메타 데이터 수정 | `PUT` /api/v1/admin/courses |
+| 4 | 선택한 여러개의 훈련 과정 제거 | `DELETE` /api/v1/admin/courses |
+| 5 | 훈련 과정의 메타 데이터 상세 조회 | `GET` /api/v1/admin/courses/{courseId} |
+| 6 | 차시 데이터 상세 조회 | `GET` /api/v1/admin/courses/{courseId}/sessions |
+| 7 | 차시 생성 | `POST` /api/v1/admin/courses/sessions |
+| 8 | 차시 데이터 수정 | `PUT` /api/v1/admin/courses/sessions |
+| 9 | 차시 순서 변경 | `PATCH` /api/v1/admin/courses/sessions/reorder |
+| 10 | 차시 제거 | `DELETE` /api/v1/admin/courses/{courseId}/sessions/{sessionId} |
+| 11 | 콘텐츠 생성 | `POST` /api/v1/admin/courses/sessions/contents |
+| 12 | 콘텐츠 데이터 수정 | `PUT` /api/v1/admin/courses/sessions/contents |
+| 13 | 콘텐츠 순서 변경 | `PATCH` /api/v1/admin/courses/sessions/contents/reorder |
+| 14 | 콘텐츠 제거 | `DELETE` /api/v1/admin/courses/{courseId}/sessions/{sessionId}/contents/{contentsId} |
+| 15 | 퀴즈 생성 | `POST` /api/v1/admin/courses/sessions/contents/quizzes |
+| 16 | 퀴즈 수정 | `PUT` /api/v1/admin/courses/sessions/contents/quizzes/{quizId} |
+| 17 | 퀴즈 제거 | `DELETE` /api/v1/admin/courses/{courseId}/sessions/{sessionId}/contents/{contentsId}/quizzes/{quizId} |
+| 18 | 멀티파트업로드 시작 | `POST` /api/v1/s3/initiate |
+| 19 | 사전 서명된 Url 생성 | `POST` /api/v1/s3/presigned-url |
+| 20 | 멀티파트 업로드 완료 검증 | `PUT` /api/v1/s3/complete |
+
+
