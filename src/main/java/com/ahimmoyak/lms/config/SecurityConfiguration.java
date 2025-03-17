@@ -29,7 +29,7 @@ public class SecurityConfiguration {
                         .jwt(jwt -> jwt.decoder(tokenProvider.accessTokenDecoder()))
                 )
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/v1/admin/*").hasAuthority("admin")
+                        .requestMatchers("/api/v1/admin/*", "/api/v1/s3/*").hasAuthority("admin")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new CustomAuthenticationFilter(tokenProvider), AuthorizationFilter.class);
