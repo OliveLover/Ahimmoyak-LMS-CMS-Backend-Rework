@@ -48,14 +48,14 @@
 <br />
 
 ### 🚧 프로젝트 링크
-> 🚧 [프로젝트 배포 링크](https://www.ahimmoyak.shop/admin/courses) (리워크 중)
+> 🚧 [프로젝트 배포 링크](https://www.ahimmoyak.shop) (리워크 중)
 
 <br />
 
 ### 🗓️ 개발 기간
-1차 훈련과정 구성하기(AWS SDK Java 2.x, CI/CD) : 2024.1.7 ~ 2024.2.27 (완료)
+1차 훈련과정 구성하기(AWS SDK Java 2.x, CI/CD) : 2025.1.7 ~ 2025.2.27 (완료)
  
-2차 인증/인가(Amazon Cognito/SPA방식) 구성하기 : 2024.3.11 ~ 2024.3.17(완료)
+2차 인증/인가(Amazon Cognito/SPA방식) 구성하기 : 2025.3.11 ~ 2025.3.17(완료)
 
 3차 사용자 화면 구성하기 : (진행 예정)
  
@@ -66,14 +66,15 @@
 **Language**
 <div align="start">
   <img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=java&logoColor=white">
-  <img src="https://img.shields.io/badge/html5-E34F26?style=for-the-badge&logo=html5&logoColor=white">
   <img src="https://img.shields.io/badge/css3-1572B6?style=for-the-badge&logo=css3&logoColor=white">
 </div>
 <br />
   
- **Framework**
+ **Framework & Library**
 <div align="start">
   <img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white">
+  <img src="https://img.shields.io/badge/spring%20security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white">
+  <img src="https://img.shields.io/badge/spring%20actuator-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
   <img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=white">
 </div>
 <br />
@@ -98,7 +99,6 @@
   <img src="https://img.shields.io/badge/amazon ecs-FF9900?style=for-the-badge&logo=amazonecs&logoColor=white">
   <img src="https://img.shields.io/badge/amazon ecr-FF9900?style=for-the-badge&logo=amazonecr&logoColor=white">
   <img src="https://img.shields.io/badge/amazon route53-C4FFF?style=for-the-badge&logo=amazonroute53&logoColor=white">
-  <img src="https://img.shields.io/badge/amazon api gateway-FF4F8B?style=for-the-badge&logo=amazonapigateway&logoColor=white">
   <img src="https://img.shields.io/badge/amazon iam-DD344C?style=for-the-badge&logo=amazoniam&logoColor=white">
   <img src="https://img.shields.io/badge/aws fargate-FF9900?style=for-the-badge&logo=awsfargate&logoColor=white">
   <img src="https://img.shields.io/badge/amazon cognito-DD344C?style=for-the-badge&logo=amazoncognito&logoColor=white">
@@ -118,7 +118,7 @@
 
 <details>
   <summary>
-     $\rm{\normalsize{\color{#6580DD}1차,\ 2차\ 인프라 아키텍처}}$
+     $\rm{\normalsize{\color{#6580DD}1차\ 인프라\ 아키텍처}}$
   </summary>
 
   <br />
@@ -127,11 +127,23 @@
 
 </details>
 
+<details>
+  <summary>
+     $\rm{\normalsize{\color{#6580DD}2차\ 인프라 아키텍처}}$
+  </summary>
+
+  <br />
+  
+ ![Infra Architecture_2](https://github.com/user-attachments/assets/f07415e8-578f-4e57-ae64-4272afe22957)
+
+
+</details>
+
 <br />
 
  ## 🗺 기능 동작(UI, UX)
 
- ### 1차 훈련과정 구성하기
+ ### 1차 훈련과정 구성하기(AWS SDK Java 2.x, CI/CD)
 
  <details>
   <summary>
@@ -279,6 +291,61 @@
 
   <p>* 차시 삭제 : 해당 차시와 관련된 영상과 퀴즈가 모두 제거됩니다. </p>
   <p>* 훈련 과정 삭제 " 해당 훈련과정과 관련된 차시와 영상, 퀴즈, 썸네일이 모두 제거됩니다.</p>
+
+</details>
+
+<br />
+
+### 2차 인증/인가(Amazon Cognito/SPA방식) 구성하기
+
+<details>
+  <summary>
+     $\rm{\normalsize{\color{#6580DD}회원가입(Amazon\ Cognito)}}$
+  </summary>
+
+  <br />
+
+  [프로젝트 배포 링크](https://www.ahimmoyak.shop)에서 "로그인"을 클릭합니다.
+  
+  ![1](https://github.com/user-attachments/assets/3fcd2b6f-1ea0-4ca9-9d44-8077cde83b00)
+
+  아래와 같이 기본 Cognito 호스팅 UI로 이동하게 됩니다. "Create an account"를 클릭하면 회원가입 페이지로 이동하게 됩니다.
+  
+  ![image](https://github.com/user-attachments/assets/a4e6aede-e237-4600-bb2f-9c7de1f6bd86)
+
+  해당 정보를 입력한 후 "Sign Up"을 클릭하면 기입한 e-mail로 인증코드가 전송됩니다.
+  
+  ![image](https://github.com/user-attachments/assets/2aad9bef-7085-4ce5-a84f-38a713576353)
+
+  아래와 같은 인증 코드를 입력하면 회원가입이 완료됩니다.
+  
+  ![image](https://github.com/user-attachments/assets/ba3963c6-f4dd-4ed9-bbde-20c2075bb9f8)
+
+  <br />
+
+</details>
+
+<details>
+  <summary>
+     $\rm{\normalsize{\color{#6580DD}로그인(Amazon\ Cognito)}}$
+  </summary>
+
+  <br />
+
+  [프로젝트 배포 링크](https://www.ahimmoyak.shop)에서 "로그인"을 클릭합니다.
+  
+  ![1](https://github.com/user-attachments/assets/3fcd2b6f-1ea0-4ca9-9d44-8077cde83b00)
+
+  아래와 같이 기본 Cognito 호스팅 UI로 이동하게 됩니다. "Username(사용자 아이디)"를 입력하고 "Next"를 클릭합니다.
+  
+  ![image](https://github.com/user-attachments/assets/a4e6aede-e237-4600-bb2f-9c7de1f6bd86)
+
+  "Password(비밀 번호)"를 입력하고 "Continue"를 클립합니다.
+  ![image](https://github.com/user-attachments/assets/6f71a474-0807-47b5-bccd-a5544a2f7bd2)
+
+  로그인에 성공하면 해당 계정의 권한에 따라 **관라지페이지** 또는 **수강페이지**로 리다이렉트 됩니다.
+
+  <br />
 
 </details>
 
