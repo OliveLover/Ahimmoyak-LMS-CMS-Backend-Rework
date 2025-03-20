@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-public class CourseController {
+public class AdminCourseController {
 
     private final CourseService courseService;
 
