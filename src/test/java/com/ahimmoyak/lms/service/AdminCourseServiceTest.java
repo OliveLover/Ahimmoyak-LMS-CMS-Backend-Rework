@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class CourseServiceTest {
+class AdminCourseServiceTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -60,7 +60,7 @@ class CourseServiceTest {
     private List<String> quizIds = new ArrayList<>();
 
     @Autowired
-    public CourseServiceTest(DynamoDbEnhancedClient enhancedClient) {
+    public AdminCourseServiceTest(DynamoDbEnhancedClient enhancedClient) {
         this.coursesTable = enhancedClient.table("courses", Course.COURSES_TABLE_SCHEMA);
         this.sessionsTable = enhancedClient.table("sessions", Session.SESSIONS_TABLE_SCHEMA);
         this.contentsTable = enhancedClient.table("contents", Content.CONTENTS_TABLE_SCHEMA);

@@ -38,7 +38,7 @@ import static com.ahimmoyak.lms.entity.Session.SESSIONS_TABLE_SCHEMA;
 
 @Slf4j
 @Service
-public class CourseService {
+public class AdminCourseService {
 
     private final DynamoDbTable<Course> coursesTable;
     private final DynamoDbTable<Session> sessionsTable;
@@ -47,7 +47,7 @@ public class CourseService {
     private final S3MultipartUploadService s3MultipartUploadService;
 
     @Autowired
-    public CourseService(DynamoDbEnhancedClient enhancedClient, S3MultipartUploadService s3MultipartUploadService) {
+    public AdminCourseService(DynamoDbEnhancedClient enhancedClient, S3MultipartUploadService s3MultipartUploadService) {
         this.coursesTable = enhancedClient.table("courses", COURSES_TABLE_SCHEMA);
         this.sessionsTable = enhancedClient.table("sessions", SESSIONS_TABLE_SCHEMA);
         this.contentsTable = enhancedClient.table("contents", CONTENTS_TABLE_SCHEMA);
