@@ -1,17 +1,19 @@
-package com.ahimmoyak.lms.dto.course;
+package com.ahimmoyak.lms.dto.course.admin;
 
-import jakarta.validation.constraints.NotBlank;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminUpdateContentRequestDto {
+public class AdminCreateQuizRequestDto {
 
     @NotNull(message = "Course ID (courseId) is a required field.")
     private String courseId;
@@ -19,10 +21,11 @@ public class AdminUpdateContentRequestDto {
     @NotNull(message = "Content ID (contentId) is a required field.")
     private String contentId;
 
-    @NotBlank(message = "Content Title (contentTitle) cannot be blank.")
-    private String contentTitle;
-
-    @NotNull(message = "Content type is a required field.")
-    private ContentType contentType;
+    private String quizId;
+    private int quizIndex;
+    private String question;
+    private List<String> options;
+    private int answer;
+    private String explanation;
 
 }

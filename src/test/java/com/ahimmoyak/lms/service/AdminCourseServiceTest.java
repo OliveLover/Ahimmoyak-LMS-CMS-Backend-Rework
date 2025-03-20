@@ -1,6 +1,6 @@
 package com.ahimmoyak.lms.service;
 
-import com.ahimmoyak.lms.dto.course.*;
+import com.ahimmoyak.lms.dto.course.admin.*;
 import com.ahimmoyak.lms.entity.Content;
 import com.ahimmoyak.lms.entity.Course;
 import com.ahimmoyak.lms.entity.Quiz;

@@ -1,4 +1,4 @@
-package com.ahimmoyak.lms.dto.course;
+package com.ahimmoyak.lms.dto.course.admin;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

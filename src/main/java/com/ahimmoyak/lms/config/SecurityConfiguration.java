@@ -30,7 +30,7 @@ public class SecurityConfiguration {
                 )
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/v1/admin/*", "/api/v1/s3/*").hasAuthority("admin")
-                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/health", "/api/v1/courses").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new CustomAuthenticationFilter(tokenProvider), AuthorizationFilter.class);

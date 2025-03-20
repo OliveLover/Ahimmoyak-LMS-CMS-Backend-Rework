@@ -1,7 +1,7 @@
 package com.ahimmoyak.lms.controller;
 
 import com.ahimmoyak.lms.dto.MessageResponseDto;
-import com.ahimmoyak.lms.dto.course.*;
+import com.ahimmoyak.lms.dto.course.admin.*;
 import com.ahimmoyak.lms.service.AdminCourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

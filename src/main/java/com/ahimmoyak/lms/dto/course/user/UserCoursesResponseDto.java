@@ -1,5 +1,6 @@
-package com.ahimmoyak.lms.dto.course;
+package com.ahimmoyak.lms.dto.course.user;
 
+import com.ahimmoyak.lms.dto.course.CoursesDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,8 +12,8 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminManagedCoursesResponseDto {
+public class UserCoursesResponseDto {
 
-    private List<AdminManagedCourseDto> courses;
+    private List<CoursesDto> courses;
 
 }

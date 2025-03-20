@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum NcsClassification {
+
     UNDEFINED("00", "미정"),
     BUSINESS_MANAGEMENT("01", "사업관리"),
     MANAGEMENT_ACCOUNTING_OFFICE_WORK("02", "경영·회계·사무"),

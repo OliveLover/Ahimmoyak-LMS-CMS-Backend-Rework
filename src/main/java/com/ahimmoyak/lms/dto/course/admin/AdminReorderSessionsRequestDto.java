@@ -1,4 +1,4 @@
-package com.ahimmoyak.lms.dto.course;
+package com.ahimmoyak.lms.dto.course.admin;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -10,15 +10,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminReorderContentsRequestDto {
+public class AdminReorderSessionsRequestDto {
 
     @NotNull(message = "Course ID (courseId) is a required field.")
     private String courseId;
 
-    @NotNull(message = "Content Index (fromContentIndex) is a required field.")
-    private int fromContentIndex;
+    @NotNull(message = "Session Index (fromSessionIndex) is a required field.")
+    private int fromSessionIndex;
 
-    @NotNull(message = "Content Index (toContentIndex) is a required field.")
-    private int toContentIndex;
+    @NotNull(message = "Session Index (toSessionIndex) is a required field.")
+    private int toSessionIndex;
 
 }

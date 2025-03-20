@@ -1,4 +1,4 @@
-package com.ahimmoyak.lms.dto.course;
+package com.ahimmoyak.lms.dto.course.admin;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;

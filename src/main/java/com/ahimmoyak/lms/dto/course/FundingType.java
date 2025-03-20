@@ -1,14 +1,18 @@
 package com.ahimmoyak.lms.dto.course;
 
+import lombok.Getter;
+
+@Getter
 public enum FundingType {
 
-    // 미정
-    PENDING,
+    PENDING("미정"),
+    REFUNDABLE("환급 과정"),
+    NON_REFUNDABLE("비환급 과정");
 
-    // 환급 과정
-    REFUNDABLE,
+    private final String typeName;
 
-    // 비환급 과정
-    NON_REFUNDABLE
+    FundingType(String typeName) {
+        this.typeName = typeName;
+    }
 
 }

@@ -11,8 +11,12 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminCourseSessionInfoResponseDto {
+public class CoursesDto {
 
-    private List<SessionDto> sessions;
+    private String courseTitle;
+    private String thumbnailPath;
+    private String ncsName;
+    private String fundingTypeName;
+    private List<String> cardTypeNames;
 
 }

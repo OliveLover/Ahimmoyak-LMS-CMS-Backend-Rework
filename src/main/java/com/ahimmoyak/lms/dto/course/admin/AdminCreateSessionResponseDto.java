@@ -1,4 +1,4 @@
-package com.ahimmoyak.lms.dto.course;
+package com.ahimmoyak.lms.dto.course.admin;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminCreateQuizResponseDto {
+public class AdminCreateSessionResponseDto {
 
-    private String quizId;
+    private String sessionId;
 
 }

@@ -23,6 +23,7 @@ public class CorsCustomizer implements CorsConfigurationSource {
                 "GET",
                 "POST",
                 "PUT",
+                "PATCH",
                 "DELETE",
                 "OPTIONS"
         ));

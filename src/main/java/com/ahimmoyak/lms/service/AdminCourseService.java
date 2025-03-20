@@ -1,7 +1,10 @@
 package com.ahimmoyak.lms.service;
 
 import com.ahimmoyak.lms.dto.MessageResponseDto;
-import com.ahimmoyak.lms.dto.course.*;
+import com.ahimmoyak.lms.dto.course.ContentDto;
+import com.ahimmoyak.lms.dto.course.QuizDto;
+import com.ahimmoyak.lms.dto.course.SessionDto;
+import com.ahimmoyak.lms.dto.course.admin.*;
 import com.ahimmoyak.lms.entity.Content;
 import com.ahimmoyak.lms.entity.Course;
 import com.ahimmoyak.lms.entity.Quiz;
@@ -10,7 +13,6 @@ import com.ahimmoyak.lms.exception.BadRequestException;
 import com.ahimmoyak.lms.exception.NotFoundException;
 import com.ahimmoyak.lms.exception.ResourceNotFoundException;
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -36,7 +38,6 @@ import static com.ahimmoyak.lms.entity.Course.COURSES_TABLE_SCHEMA;
 import static com.ahimmoyak.lms.entity.Quiz.QUIZZES_TABLE_SCHEMA;
 import static com.ahimmoyak.lms.entity.Session.SESSIONS_TABLE_SCHEMA;
 
-@Slf4j
 @Service
 public class AdminCourseService {
 

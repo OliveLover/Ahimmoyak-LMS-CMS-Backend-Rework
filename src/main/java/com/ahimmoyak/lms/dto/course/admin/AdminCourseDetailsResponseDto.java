@@ -1,28 +1,34 @@
-package com.ahimmoyak.lms.dto.course;
+package com.ahimmoyak.lms.dto.course.admin;
 
+import com.ahimmoyak.lms.dto.course.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AdminManagedCourseDto {
+public class AdminCourseDetailsResponseDto {
 
     private String courseId;
     private String courseTitle;
+    private String courseIntroduce;
     private CourseStatus status;
     private LocalDate activeStartDate;
     private LocalDate activeEndDate;
     private String instructor;
+    private String thumbnailPath;
+    private String thumbnailName;
+    private long thumbnailSize;
     private CourseGrade grade;
     private NcsClassification ncsClassification;
     private int setDuration;
-    private int remainingDuration;
     private FundingType fundingType;
+    private List<CardType> cardType;
 
 }
