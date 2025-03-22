@@ -54,6 +54,7 @@ public class UserCourseService {
         List<CoursesDto> randomCourses = courses.stream()
                 .limit(5)
                 .map(course -> CoursesDto.builder()
+                        .courseId(course.getCourseId())
                         .courseTitle(course.getCourseTitle())
                         .thumbnailPath(course.getThumbnailPath())
                         .ncsName(course.getNcsClassification().getDisplayName())

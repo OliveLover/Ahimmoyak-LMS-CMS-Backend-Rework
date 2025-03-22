@@ -13,6 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class CoursesDto {
 
+    private String courseId;
     private String courseTitle;
     private String thumbnailPath;
     private String ncsName;
