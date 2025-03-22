@@ -1,6 +1,6 @@
 package com.ahimmoyak.lms.controller;
 
-import com.ahimmoyak.lms.dto.course.user.UserCoursesResponseDto;
+import com.ahimmoyak.lms.dto.course.user.UserMainNcsCoursesResponseDto;
 import com.ahimmoyak.lms.service.UserCourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +14,8 @@ public class UserCourseController {
     private final UserCourseService userCourseService;
 
     @GetMapping("/api/v1/courses")
-    public ResponseEntity<UserCoursesResponseDto> getActiveCourses() {
-        return userCourseService.getActiveCourses();
+    public ResponseEntity<UserMainNcsCoursesResponseDto> getActiveNcsCourses() {
+        return userCourseService.getActiveNcsCourses();
     }
 
 }

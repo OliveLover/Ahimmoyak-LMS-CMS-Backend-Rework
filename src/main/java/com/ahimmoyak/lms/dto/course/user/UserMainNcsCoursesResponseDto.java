@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserCoursesResponseDto {
+public class UserMainNcsCoursesResponseDto {
 
     private List<CoursesDto> courses;
 

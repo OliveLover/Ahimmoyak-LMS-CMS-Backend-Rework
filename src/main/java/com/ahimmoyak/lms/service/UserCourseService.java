@@ -2,7 +2,7 @@ package com.ahimmoyak.lms.service;
 
 import com.ahimmoyak.lms.dto.course.CardType;
 import com.ahimmoyak.lms.dto.course.CoursesDto;
-import com.ahimmoyak.lms.dto.course.user.UserCoursesResponseDto;
+import com.ahimmoyak.lms.dto.course.user.UserMainNcsCoursesResponseDto;
 import com.ahimmoyak.lms.entity.Course;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +15,12 @@ import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.ScanEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static com.ahimmoyak.lms.dto.course.FundingType.PENDING;
 import static com.ahimmoyak.lms.entity.Course.COURSES_TABLE_SCHEMA;
 import static org.springframework.security.oauth2.core.OAuth2TokenIntrospectionClaimNames.ACTIVE;
 
@@ -31,7 +34,7 @@ public class UserCourseService {
         this.coursesTable = enhancedClient.table("courses", COURSES_TABLE_SCHEMA);
     }
 
-    public ResponseEntity<UserCoursesResponseDto> getActiveCourses() {
+    public ResponseEntity<UserMainNcsCoursesResponseDto> getActiveNcsCourses() {
         ScanEnhancedRequest enhancedRequest = ScanEnhancedRequest.builder()
                 .filterExpression(Expression.builder()
                         .expression("#stat = :statusValue")
@@ -42,13 +45,19 @@ public class UserCourseService {
 
         SdkIterable<Page<Course>> result = coursesTable.scan(enhancedRequest);
 
-        List<CoursesDto> courses = result.stream()
+        List<Course> courses = new ArrayList<>(result.stream()
                 .flatMap(page -> page.items().stream())
+                .toList());
+
+        Collections.shuffle(courses);
+
+        List<CoursesDto> randomCourses = courses.stream()
+                .limit(5)
                 .map(course -> CoursesDto.builder()
                         .courseTitle(course.getCourseTitle())
                         .thumbnailPath(course.getThumbnailPath())
                         .ncsName(course.getNcsClassification().getDisplayName())
-                        .fundingTypeName(course.getFundingType().getTypeName())
+                        .fundingTypeName(course.getFundingType().getTypeName().equals(PENDING.getTypeName()) ? null : course.getFundingType().getTypeName())
                         .cardTypeNames(
                                 course.getCardType().stream()
                                         .map(CardType::getTypeName)
@@ -57,8 +66,8 @@ public class UserCourseService {
                         .build())
                 .toList();
 
-        UserCoursesResponseDto responseDto = UserCoursesResponseDto.builder()
-                .courses(courses)
+        UserMainNcsCoursesResponseDto responseDto = UserMainNcsCoursesResponseDto.builder()
+                .courses(randomCourses)
                 .build();
 
         return ResponseEntity.ok(responseDto);
