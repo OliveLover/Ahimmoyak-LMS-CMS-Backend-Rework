@@ -19,6 +19,7 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import java.util.*;
 
 import static com.ahimmoyak.lms.dto.course.FundingType.PENDING;
+import static com.ahimmoyak.lms.dto.course.NcsClassification.UNDEFINED;
 import static com.ahimmoyak.lms.entity.Course.COURSES_TABLE_SCHEMA;
 import static org.springframework.security.oauth2.core.OAuth2TokenIntrospectionClaimNames.ACTIVE;
 
@@ -50,6 +51,7 @@ public class UserCourseService {
         Collections.shuffle(courses);
 
         List<CoursesDto> randomCourses = courses.stream()
+                .filter(course -> course.getNcsClassification() != UNDEFINED)
                 .limit(5)
                 .map(course -> CoursesDto.builder()
                         .courseId(course.getCourseId())
