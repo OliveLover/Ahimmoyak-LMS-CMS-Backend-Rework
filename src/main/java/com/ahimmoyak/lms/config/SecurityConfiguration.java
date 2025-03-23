@@ -29,8 +29,9 @@ public class SecurityConfiguration {
                         .jwt(jwt -> jwt.decoder(tokenProvider.accessTokenDecoder()))
                 )
                 .authorizeHttpRequests(authz -> authz
+                        .requestMatchers("/api/v1/courses/00").denyAll()
                         .requestMatchers("/api/v1/admin/*", "/api/v1/s3/*").hasAuthority("admin")
-                        .requestMatchers("/actuator/health", "/api/v1/courses").permitAll()
+                        .requestMatchers("/actuator/health", "/api/v1/courses", "/api/v1/courses/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new CustomAuthenticationFilter(tokenProvider), AuthorizationFilter.class);

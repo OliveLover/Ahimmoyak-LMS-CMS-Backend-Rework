@@ -2,7 +2,8 @@ package com.ahimmoyak.lms.service;
 
 import com.ahimmoyak.lms.dto.course.CardType;
 import com.ahimmoyak.lms.dto.course.CoursesDto;
-import com.ahimmoyak.lms.dto.course.user.UserMainNcsCoursesResponseDto;
+import com.ahimmoyak.lms.dto.course.NcsClassification;
+import com.ahimmoyak.lms.dto.course.user.UserCoursesResponseDto;
 import com.ahimmoyak.lms.entity.Course;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +16,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.ScanEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.ahimmoyak.lms.dto.course.FundingType.PENDING;
 import static com.ahimmoyak.lms.entity.Course.COURSES_TABLE_SCHEMA;
@@ -34,7 +32,7 @@ public class UserCourseService {
         this.coursesTable = enhancedClient.table("courses", COURSES_TABLE_SCHEMA);
     }
 
-    public ResponseEntity<UserMainNcsCoursesResponseDto> getActiveNcsCourses() {
+    public ResponseEntity<UserCoursesResponseDto> getActiveNcsCourses() {
         ScanEnhancedRequest enhancedRequest = ScanEnhancedRequest.builder()
                 .filterExpression(Expression.builder()
                         .expression("#stat = :statusValue")
@@ -67,8 +65,54 @@ public class UserCourseService {
                         .build())
                 .toList();
 
-        UserMainNcsCoursesResponseDto responseDto = UserMainNcsCoursesResponseDto.builder()
+        UserCoursesResponseDto responseDto = UserCoursesResponseDto.builder()
                 .courses(randomCourses)
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    public ResponseEntity<UserCoursesResponseDto> getActiveCoursesByCode(String code) {
+        List<CoursesDto> courses = new ArrayList<>();
+
+        Optional<NcsClassification> ncsClassificationOptional = Arrays.stream(NcsClassification.values())
+                .filter(c -> c.getCodeNum().equals(code))
+                .findFirst();
+
+        if (ncsClassificationOptional.isPresent()) {
+            NcsClassification ncsClassification = ncsClassificationOptional.get();
+
+            ScanEnhancedRequest enhancedRequest = ScanEnhancedRequest.builder()
+                    .filterExpression(Expression.builder()
+                            .expression("#stat = :statusValue AND #ncs_classification = :ncsClassification")
+                            .expressionValues(Map.of(":statusValue", AttributeValue.builder().s(ACTIVE.toUpperCase()).build(),
+                                    ":ncsClassification", AttributeValue.builder().s(ncsClassification.toString().toUpperCase()).build()))
+                            .expressionNames(Map.of("#stat", "status", "#ncs_classification", "ncs_classification"))
+                            .build())
+                    .build();
+
+            SdkIterable<Page<Course>> result = coursesTable.scan(enhancedRequest);
+
+            courses = result.stream()
+                    .flatMap(page -> page.items().stream())
+                    .map(course -> CoursesDto.builder()
+                            .courseId(course.getCourseId())
+                            .courseTitle(course.getCourseTitle())
+                            .thumbnailPath(course.getThumbnailPath())
+                            .ncsName(course.getNcsClassification().getDisplayName())
+                            .fundingTypeName(course.getFundingType().getTypeName().equals(PENDING.getTypeName()) ? null : course.getFundingType().getTypeName())
+                            .cardTypeNames(
+                                    course.getCardType().stream()
+                                            .map(CardType::getTypeName)
+                                            .toList()
+                            )
+                            .build()
+                    )
+                    .toList();
+        }
+
+        UserCoursesResponseDto responseDto = UserCoursesResponseDto.builder()
+                .courses(courses)
                 .build();
 
         return ResponseEntity.ok(responseDto);
