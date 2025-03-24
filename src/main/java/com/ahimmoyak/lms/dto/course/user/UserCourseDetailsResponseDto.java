@@ -1,7 +1,5 @@
 package com.ahimmoyak.lms.dto.course.user;
 
-import com.ahimmoyak.lms.dto.course.CardType;
-import com.ahimmoyak.lms.dto.course.FundingType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,5 +24,6 @@ public class UserCourseDetailsResponseDto {
     private int setDuration;
     private String fundingTypeName;
     private List<String> cardTypeNames;
+    private List<SessionPreviewDto> sessionPreviews;
 
 }

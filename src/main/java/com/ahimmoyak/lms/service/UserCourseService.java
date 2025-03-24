@@ -3,9 +3,11 @@ package com.ahimmoyak.lms.service;
 import com.ahimmoyak.lms.dto.course.CardType;
 import com.ahimmoyak.lms.dto.course.CoursesDto;
 import com.ahimmoyak.lms.dto.course.NcsClassification;
+import com.ahimmoyak.lms.dto.course.user.SessionPreviewDto;
 import com.ahimmoyak.lms.dto.course.user.UserCourseDetailsResponseDto;
 import com.ahimmoyak.lms.dto.course.user.UserCoursesResponseDto;
 import com.ahimmoyak.lms.entity.Course;
+import com.ahimmoyak.lms.entity.Session;
 import com.ahimmoyak.lms.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,16 +27,19 @@ import java.util.*;
 import static com.ahimmoyak.lms.dto.course.FundingType.PENDING;
 import static com.ahimmoyak.lms.dto.course.NcsClassification.UNDEFINED;
 import static com.ahimmoyak.lms.entity.Course.COURSES_TABLE_SCHEMA;
+import static com.ahimmoyak.lms.entity.Session.SESSIONS_TABLE_SCHEMA;
 import static org.springframework.security.oauth2.core.OAuth2TokenIntrospectionClaimNames.ACTIVE;
 
 @Service
 public class UserCourseService {
 
     private final DynamoDbTable<Course> coursesTable;
+    private final DynamoDbTable<Session> sessionsTable;
 
     @Autowired
     public UserCourseService(DynamoDbEnhancedClient enhancedClient) {
         this.coursesTable = enhancedClient.table("courses", COURSES_TABLE_SCHEMA);
+        this.sessionsTable = enhancedClient.table("sessions", SESSIONS_TABLE_SCHEMA);
     }
 
     public ResponseEntity<UserCoursesResponseDto> getActiveNcsCourses() {
@@ -136,6 +141,21 @@ public class UserCourseService {
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Course not found with ID: " + courseId));
 
+        QueryEnhancedRequest sessionQueryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .build();
+
+        SdkIterable<Page<Session>> sessionResult = sessionsTable.query(sessionQueryRequest);
+
+        List<SessionPreviewDto> sessionPreviews = sessionResult.stream()
+                .flatMap(page -> page.items().stream())
+                .map(session -> SessionPreviewDto.builder()
+                        .sessionTitle(session.getSessionTitle())
+                        .sessionIndex(session.getSessionIndex())
+                        .build())
+                .sorted(Comparator.comparingInt(SessionPreviewDto::getSessionIndex))
+                .toList();
+
         UserCourseDetailsResponseDto responseDto = UserCourseDetailsResponseDto.builder()
                 .courseId(course.getCourseId())
                 .courseTitle(course.getCourseTitle())
@@ -151,6 +171,7 @@ public class UserCourseService {
                                 .map(CardType::getTypeName)
                                 .toList()
                 )
+                .sessionPreviews(sessionPreviews)
                 .build();
 
         return ResponseEntity.ok(responseDto);
