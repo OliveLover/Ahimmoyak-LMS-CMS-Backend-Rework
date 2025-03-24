@@ -3,8 +3,10 @@ package com.ahimmoyak.lms.service;
 import com.ahimmoyak.lms.dto.course.CardType;
 import com.ahimmoyak.lms.dto.course.CoursesDto;
 import com.ahimmoyak.lms.dto.course.NcsClassification;
+import com.ahimmoyak.lms.dto.course.user.UserCourseDetailsResponseDto;
 import com.ahimmoyak.lms.dto.course.user.UserCoursesResponseDto;
 import com.ahimmoyak.lms.entity.Course;
+import com.ahimmoyak.lms.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,8 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.ScanEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
@@ -120,4 +124,35 @@ public class UserCourseService {
         return ResponseEntity.ok(responseDto);
     }
 
+    public ResponseEntity<UserCourseDetailsResponseDto> getActiveCourseDetails(String courseId) {
+        QueryEnhancedRequest queryRequest = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(k -> k.partitionValue(courseId)))
+                .build();
+
+        SdkIterable<Page<Course>> result = coursesTable.query(queryRequest);
+
+        Course course = result.stream()
+                .flatMap(page -> page.items().stream())
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Course not found with ID: " + courseId));
+
+        UserCourseDetailsResponseDto responseDto = UserCourseDetailsResponseDto.builder()
+                .courseId(course.getCourseId())
+                .courseTitle(course.getCourseTitle())
+                .courseIntroduce(course.getCourseIntroduce())
+                .instructor(course.getInstructor())
+                .thumbnailPath(course.getThumbnailPath())
+                .startDate(course.getActiveStartDate())
+                .endDate(course.getActiveEndDate())
+                .setDuration(course.getSetDuration())
+                .fundingTypeName(course.getFundingType().getTypeName().equals(PENDING.getTypeName()) ? null : course.getFundingType().getTypeName())
+                .cardTypeNames(
+                        course.getCardType().stream()
+                                .map(CardType::getTypeName)
+                                .toList()
+                )
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
 }

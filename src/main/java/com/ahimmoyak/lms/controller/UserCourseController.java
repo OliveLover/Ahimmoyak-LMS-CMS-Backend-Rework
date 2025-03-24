@@ -1,5 +1,6 @@
 package com.ahimmoyak.lms.controller;
 
+import com.ahimmoyak.lms.dto.course.user.UserCourseDetailsResponseDto;
 import com.ahimmoyak.lms.dto.course.user.UserCoursesResponseDto;
 import com.ahimmoyak.lms.service.UserCourseService;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +20,14 @@ public class UserCourseController {
         return userCourseService.getActiveNcsCourses();
     }
 
-    @GetMapping("/api/v1/courses/{code}")
+    @GetMapping("/api/v1/courses/code/{code}")
     public ResponseEntity<UserCoursesResponseDto> getActiveCoursesByCode(@PathVariable String code) {
         return userCourseService.getActiveCoursesByCode(code);
+    }
+
+    @GetMapping("/api/v1/courses/{courseId}")
+    public ResponseEntity<UserCourseDetailsResponseDto> getActiveCourseDetails(@PathVariable String courseId) {
+        return userCourseService.getActiveCourseDetails(courseId);
     }
 
 }
