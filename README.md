@@ -57,7 +57,9 @@
  
 2차 인증/인가(Amazon Cognito/SPA방식) 구성하기 : 2025.3.11 ~ 2025.3.17(완료)
 
-3차 사용자 화면 구성하기 : (진행 예정)
+3차 사용자 화면 구성하기 : 2025.3.25 ~ 2025.3.24(완료)
+
+4차 마이 페이지 구성하기 : (진행 예정)
  
 <br />
 
@@ -129,7 +131,7 @@
 
 <details>
   <summary>
-     $\rm{\normalsize{\color{#6580DD}2차\ 인프라 아키텍처}}$
+     $\rm{\normalsize{\color{#6580DD}2차,\ 3차\ 인프라 아키텍처}}$
   </summary>
 
   <br />
@@ -307,7 +309,7 @@
 
   [프로젝트 배포 링크](https://www.ahimmoyak.shop)에서 "로그인"을 클릭합니다.
   
-  ![1](https://github.com/user-attachments/assets/3fcd2b6f-1ea0-4ca9-9d44-8077cde83b00)
+  ![회원가입](https://github.com/user-attachments/assets/e6a993a2-f47f-4af8-94b4-a383a98cbe41)
 
   아래와 같이 기본 Cognito 호스팅 UI로 이동하게 됩니다. "Create an account"를 클릭하면 회원가입 페이지로 이동하게 됩니다.
   
@@ -334,7 +336,7 @@
 
   [프로젝트 배포 링크](https://www.ahimmoyak.shop)에서 "로그인"을 클릭합니다.
   
-  ![1](https://github.com/user-attachments/assets/3fcd2b6f-1ea0-4ca9-9d44-8077cde83b00)
+  ![회원가입](https://github.com/user-attachments/assets/e6a993a2-f47f-4af8-94b4-a383a98cbe41)
 
   아래와 같이 기본 Cognito 호스팅 UI로 이동하게 됩니다. "Username(사용자 아이디)"를 입력하고 "Next"를 클릭합니다.
   
@@ -344,6 +346,56 @@
   ![image](https://github.com/user-attachments/assets/6f71a474-0807-47b5-bccd-a5544a2f7bd2)
 
   로그인에 성공하면 해당 계정의 권한에 따라 **관라지페이지** 또는 **수강페이지**로 리다이렉트 됩니다.
+
+  <br />
+
+</details>
+
+<br />
+
+### 3차 사용자 화면 구성하기
+
+<details>
+  <summary>
+     $\rm{\normalsize{\color{#6580DD}구성한\ 강의\ 확인하기}}$
+  </summary>
+
+  <br />
+
+  아래의 빨간 영역으로 **관리자 페이지** 에서 구성했던 강의 목록들을 확인할 수 있습니다. 클릭하면 해당 강의 정보로 이동합니다.
+  
+  ![메인화면](https://github.com/user-attachments/assets/336f4468-3357-49f7-a0ce-a4574a363570)
+
+  **강의 상세 페이지** 를 통해 강의에 대한 정보확인이 가능합니다.
+  
+  ![강의 상세페이지](https://github.com/user-attachments/assets/76c076be-836f-475d-bcb5-1ede55444f3b)
+
+  구성한 차시도 확인이 가능하여 강의를 선택할 때 참고 할 수 있습니다.
+  
+  ![강의 상세페이지2](https://github.com/user-attachments/assets/efc3d5ac-ea7d-4e94-bc19-fc196296a81a)
+  
+  <br />
+
+</details>
+
+<details>
+  <summary>
+     $\rm{\normalsize{\color{#6580DD} 수강가능한\ 강의\ 목록\ 확인하기}}$
+  </summary>
+
+  <br />
+
+  아래의 빨간 영역으로 **관리자 페이지** 에서 구성했던 강의 목록들을 카테고리별로 확인할 수 있습니다.
+  
+  ![메인화면2](https://github.com/user-attachments/assets/93b62fb6-e762-4e33-a35d-5c4370c2644c)
+
+  **강의 목록** 들이 카테고리별로 확인 가능합니다. 클릭하면 **강의 상세 페이지** 로 이동하게 됩니다.
+
+  ![강의목록](https://github.com/user-attachments/assets/776e7c6f-e114-4c1e-8c14-031b8ddf14d3)
+
+  **강의 상세 페이지** 를 통해 강의에 대한 정보확인이 가능합니다.
+  
+  ![강의 상세페이지](https://github.com/user-attachments/assets/76c076be-836f-475d-bcb5-1ede55444f3b)
 
   <br />
 
@@ -377,5 +429,7 @@
 | 18 | 멀티파트업로드 시작 | `POST` /api/v1/s3/initiate |
 | 19 | 사전 서명된 Url 생성 | `POST` /api/v1/s3/presigned-url |
 | 20 | 멀티파트 업로드 완료 검증 | `PUT` /api/v1/s3/complete |
-
+| 21 | 이용가능한 직무향상과정 조회 | `GET` /api/v1/courses |
+| 22 | 카테고리로 훈련과정 조회 | `GET` /api/v1/courses/code/{code} |
+| 23 | 훈련과정 상세 정보 조회 | `GET` /api/v1/courses/{courseId} |
 
